@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import ws from 'ws';
 import { env } from './env.js';
 
 // The Express backend is the only trusted client of the database, so it uses
@@ -15,6 +16,10 @@ export const supabase = createClient(
   env.supabaseServiceKey || 'missing-service-key',
   {
     auth: { persistSession: false, autoRefreshToken: false },
+    // Provide a WebSocket implementation so supabase-js's Realtime client works
+    // on Node < 22 (e.g. Netlify Functions on Node 20), which lacks a global
+    // WebSocket. We don't use Realtime, but the client constructs it eagerly.
+    realtime: { transport: ws },
   }
 );
 
