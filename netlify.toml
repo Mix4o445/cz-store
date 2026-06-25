@@ -1,18 +1,33 @@
-# Netlify configuration for the CoolZone frontend (Vite + React SPA).
-# The Express backend is NOT hosted here — deploy it separately (Render,
-# Railway, Fly.io, …) and point VITE_API_URL at it in the Netlify UI.
+# Netlify configuration for CoolZone.
+#
+# The React frontend is built to frontend/dist. The Express backend runs as a
+# serverless function (netlify/functions/api.mjs) so /api/* is served by Netlify
+# itself — no separate backend host. The function talks to Supabase over HTTPS.
+#
+# Set these in Netlify → Site settings → Environment variables:
+#   SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, JWT_SECRET, CLIENT_URL
+#   (and optionally CLOUDINARY_* / SMTP_* / ADMIN_EMAIL)
 
 [build]
-  base    = "frontend"
-  command = "npm run build"
-  publish = "dist"
+  command = "npm --prefix backend install && npm --prefix netlify/functions install && npm --prefix frontend install && npm --prefix frontend run build"
+  publish = "frontend/dist"
+  functions = "netlify/functions"
 
 [build.environment]
   NODE_VERSION = "20"
 
-# SPA fallback: every route is served by index.html so React Router can
-# handle client-side navigation (e.g. /shop, /product/:slug, /account).
+[functions]
+  node_bundler = "esbuild"
+
+# API → serverless Express. Must come before the SPA fallback.
+[[redirects]]
+  from = "/api/*"
+  to = "/.netlify/functions/api/:splat"
+  status = 200
+  force = true
+
+# SPA fallback: client-side routing for every other path.
 [[redirects]]
   from = "/*"
-  to   = "/index.html"
+  to = "/index.html"
   status = 200
