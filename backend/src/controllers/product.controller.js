@@ -20,6 +20,7 @@ const specsSchema = z
 
 const variantSchema = z.object({
   capacity: z.string().min(1),
+  model: z.string().optional().or(z.literal('')),
   price: z.number().nonnegative(),
   priceOld: z.number().nonnegative().optional(),
   stock: z.number().int().nonnegative().optional(),

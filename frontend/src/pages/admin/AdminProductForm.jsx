@@ -75,6 +75,7 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
       variants: (initial.variants ?? []).map((v) => ({
         _id: v._id,
         capacity: v.capacity ?? '',
+        model: v.model ?? '',
         price: v.price ?? '',
         priceOld: v.priceOld ?? '',
         stock: v.stock ?? 0,
@@ -100,7 +101,7 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
   const removeImage = (i) => setField('images', form.images.filter((_, idx) => idx !== i));
 
   const addVariant = () =>
-    setField('variants', [...form.variants, { capacity: '', price: '', priceOld: '', stock: 0 }]);
+    setField('variants', [...form.variants, { capacity: '', model: '', price: '', priceOld: '', stock: 0 }]);
   const setVariant = (i, key, value) =>
     setField(
       'variants',
@@ -125,6 +126,7 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
         .map((v) => {
           const item = {
             capacity: String(v.capacity).trim(),
+            model: String(v.model ?? '').trim(),
             price: Number(v.price),
             stock: Number(v.stock || 0),
           };
@@ -383,10 +385,16 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
         </p>
         <p className="text-xs text-ink-muted mb-4">{t('admin.products.variants_sub')}</p>
 
+        <datalist id="variant-models">
+          <option value="Inverter" />
+          <option value="On/Off" />
+        </datalist>
+
         {form.variants.length > 0 && (
           <ul className="space-y-2 mb-3">
-            <li className="hidden sm:grid grid-cols-[2fr_1fr_1fr_1fr_auto] gap-3 text-[10px] uppercase tracking-wider-2 text-ink-muted px-1">
+            <li className="hidden sm:grid grid-cols-[1.6fr_1.4fr_1fr_1fr_1fr_auto] gap-3 text-[10px] uppercase tracking-wider-2 text-ink-muted px-1">
               <span>{t('admin.products.variant_capacity')}</span>
+              <span>{t('admin.products.variant_model')}</span>
               <span>{t('admin.products.variant_price')}</span>
               <span>{t('admin.products.variant_priceOld')}</span>
               <span>{t('admin.products.variant_stock')}</span>
@@ -395,7 +403,7 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
             {form.variants.map((v, i) => (
               <li
                 key={v._id ?? i}
-                className="grid grid-cols-2 sm:grid-cols-[2fr_1fr_1fr_1fr_auto] gap-3 items-center"
+                className="grid grid-cols-2 sm:grid-cols-[1.6fr_1.4fr_1fr_1fr_1fr_auto] gap-3 items-center"
               >
                 <input
                   type="text"
@@ -403,6 +411,14 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
                   value={v.capacity}
                   onChange={(e) => setVariant(i, 'capacity', e.target.value)}
                   placeholder="12000 BTU"
+                  className={inputCls}
+                />
+                <input
+                  type="text"
+                  list="variant-models"
+                  value={v.model ?? ''}
+                  onChange={(e) => setVariant(i, 'model', e.target.value)}
+                  placeholder="Inverter / On-Off"
                   className={inputCls}
                 />
                 <input

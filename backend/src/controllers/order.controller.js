@@ -50,7 +50,9 @@ export async function createOrder(req, res, next) {
       return {
         product: p._id,
         name: p.name?.fr ?? '',
-        variant: variant?.capacity,
+        variant: variant
+          ? [variant.capacity, variant.model].filter(Boolean).join(' · ')
+          : undefined,
         qty: line.qty,
         price,
         deliveryFee: p.deliveryFee ?? 0,

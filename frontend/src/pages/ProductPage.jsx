@@ -195,7 +195,7 @@ export default function ProductPage() {
                 {t('product.capacity_label')}
               </p>
               <p className="text-[11px] text-ink-muted">
-                {currentVariant?.capacity}
+                {[currentVariant?.capacity, currentVariant?.model].filter(Boolean).join(' · ')}
               </p>
             </div>
             <div className="flex flex-wrap gap-2">
@@ -215,7 +215,10 @@ export default function ProductPage() {
                       out && 'opacity-50'
                     )}
                   >
-                    <span className="block">{v.capacity}</span>
+                    <span className="block">
+                      {v.capacity}
+                      {v.model ? <span className="opacity-70"> · {v.model}</span> : null}
+                    </span>
                     <span
                       className={clsx(
                         'block text-[10px] mt-0.5 num',

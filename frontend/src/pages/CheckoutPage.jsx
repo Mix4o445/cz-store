@@ -352,7 +352,7 @@ export default function CheckoutPage() {
                   <p className="font-medium leading-snug truncate">{local(item.name)}</p>
                   {item.variant?.capacity && (
                     <p className="text-[11px] uppercase tracking-wider-1 text-ink-muted mt-0.5">
-                      {item.variant.capacity}
+                      {[item.variant.capacity, item.variant.model].filter(Boolean).join(' · ')}
                     </p>
                   )}
                   <p className="text-[11px] text-ink-muted mt-1">× {item.qty}</p>

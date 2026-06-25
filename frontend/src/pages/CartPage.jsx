@@ -42,7 +42,7 @@ export default function CartPage() {
                   </Link>
                   {item.variant?.capacity && (
                     <p className="text-[11px] uppercase tracking-wider-1 text-ink-muted mt-1">
-                      {item.variant.capacity}
+                      {[item.variant.capacity, item.variant.model].filter(Boolean).join(' · ')}
                     </p>
                   )}
                 </div>
