@@ -34,7 +34,7 @@ export default function HeroBanner() {
               initial="hidden"
               animate="show"
               custom={2}
-              className="block text-primary"
+              className="block text-[#2E4C9B]"
             >
               {t('home.hero_title_b')}
             </motion.span>
