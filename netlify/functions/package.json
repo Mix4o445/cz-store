@@ -1,7 +1,6 @@
 {
   "name": "coolzone-functions",
   "private": true,
-  "type": "module",
   "dependencies": {
     "serverless-http": "^3.2.0"
   }
