@@ -3,7 +3,6 @@ import { Link, NavLink } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Heart, Search, ShoppingBag, User, ShieldCheck } from 'lucide-react';
 import clsx from 'clsx';
-import LanguageSwitcher from '../common/LanguageSwitcher';
 import Logo from '../common/Logo';
 import { useCartStore } from '@/store/cartStore';
 import { useAuthStore } from '@/store/authStore';
@@ -90,7 +89,6 @@ export default function Navbar() {
               Admin
             </Link>
           )}
-          <LanguageSwitcher className="ms-3" />
         </div>
       </div>
     </header>
