@@ -50,12 +50,31 @@ export default function ProductPage() {
   const variants = useMemo(() => product?.variants ?? [], [product]);
   const [variantIdx, setVariantIdx] = useState(0);
   const [activeImage, setActiveImage] = useState(0);
+  const [activeModel, setActiveModel] = useState('');
+
+  // Distinct variant models (e.g. "On/Off", "Inverter"), in first-seen order.
+  const models = useMemo(() => {
+    const seen = [];
+    for (const v of variants) {
+      const m = v.model || '';
+      if (!seen.includes(m)) seen.push(m);
+    }
+    return seen;
+  }, [variants]);
+  const showModelTabs = models.length > 1;
 
   // Reset variant selection when product changes
   useEffect(() => {
     setVariantIdx(0);
     setActiveImage(0);
-  }, [product?._id]);
+    setActiveModel(variants[0]?.model || '');
+  }, [product?._id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const selectModel = (m) => {
+    setActiveModel(m);
+    const firstIdx = variants.findIndex((v) => (v.model || '') === m);
+    if (firstIdx >= 0) setVariantIdx(firstIdx);
+  };
 
   if (isLoading) {
     return (
@@ -189,7 +208,28 @@ export default function ProductPage() {
 
         {/* Capacity / variant selector */}
         {hasVariants && (
-          <div className="space-y-3 pt-2">
+          <div className="space-y-4 pt-2">
+            {/* Model tabs (e.g. On/Off vs Inverter) */}
+            {showModelTabs && (
+              <div className="inline-flex flex-wrap gap-1 rounded-full border border-line p-1">
+                {models.map((m) => (
+                  <button
+                    key={m || 'standard'}
+                    type="button"
+                    onClick={() => selectModel(m)}
+                    className={clsx(
+                      'px-5 py-2 rounded-full text-sm font-medium transition-colors',
+                      activeModel === m
+                        ? 'bg-ink text-paper'
+                        : 'text-ink/60 hover:text-ink'
+                    )}
+                  >
+                    {m || t('product.standard')}
+                  </button>
+                ))}
+              </div>
+            )}
+
             <div className="flex items-center justify-between">
               <p className="text-[11px] uppercase tracking-wider-2 text-ink-muted">
                 {t('product.capacity_label')}
@@ -198,38 +238,39 @@ export default function ProductPage() {
                 {[currentVariant?.capacity, currentVariant?.model].filter(Boolean).join(' · ')}
               </p>
             </div>
-            <div className="flex flex-wrap gap-2">
-              {variants.map((v, i) => {
-                const active = i === variantIdx;
-                const out = (v.stock ?? 0) <= 0;
-                return (
-                  <button
-                    key={v._id ?? i}
-                    type="button"
-                    onClick={() => setVariantIdx(i)}
-                    className={clsx(
-                      'group relative px-4 py-2.5 border text-sm font-medium transition-all',
-                      active
-                        ? 'border-ink bg-ink text-paper'
-                        : 'border-line text-ink hover:border-ink/40',
-                      out && 'opacity-50'
-                    )}
-                  >
-                    <span className="block">
-                      {v.capacity}
-                      {v.model ? <span className="opacity-70"> · {v.model}</span> : null}
-                    </span>
-                    <span
+
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+              {variants
+                .map((v, i) => ({ v, i }))
+                .filter(({ v }) => (v.model || '') === activeModel)
+                .map(({ v, i }) => {
+                  const active = i === variantIdx;
+                  const out = (v.stock ?? 0) <= 0;
+                  return (
+                    <button
+                      key={v._id ?? i}
+                      type="button"
+                      onClick={() => setVariantIdx(i)}
                       className={clsx(
-                        'block text-[10px] mt-0.5 num',
-                        active ? 'text-paper/70' : 'text-ink-muted'
+                        'group relative px-4 py-2.5 border text-sm font-medium transition-all text-center',
+                        active
+                          ? 'border-ink bg-ink text-paper'
+                          : 'border-line text-ink hover:border-ink/40',
+                        out && 'opacity-50'
                       )}
                     >
-                      {formatPrice(v.price)}
-                    </span>
-                  </button>
-                );
-              })}
+                      <span className="block">{v.capacity}</span>
+                      <span
+                        className={clsx(
+                          'block text-[10px] mt-0.5 num',
+                          active ? 'text-paper/70' : 'text-ink-muted'
+                        )}
+                      >
+                        {formatPrice(v.price)}
+                      </span>
+                    </button>
+                  );
+                })}
             </div>
           </div>
         )}
