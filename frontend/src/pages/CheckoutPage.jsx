@@ -134,12 +134,13 @@ export default function CheckoutPage() {
 
     // Old cart entries (added before the variants update) may not carry a
     // `productId` field. Derive it from `id` as a fallback ("baseId::variantKey").
+    const UUID_RE = /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/;
     const payloadItems = items
       .map((i) => {
         const productId =
           i.productId ||
           (typeof i.id === 'string' ? i.id.split('::')[0] : null);
-        if (!productId || !/^[0-9a-fA-F]{24}$/.test(productId)) return null;
+        if (!productId || !UUID_RE.test(productId)) return null;
         return {
           product: productId,
           qty: i.qty,
