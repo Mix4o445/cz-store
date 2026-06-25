@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
-import { Loader2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Loader2, ChevronLeft, ChevronRight, SlidersHorizontal, X } from 'lucide-react';
 import ProductGrid from '@/components/product/ProductGrid';
 import { useProductList } from '@/hooks/useProducts';
 import { useCategories } from '@/hooks/useCategories';
@@ -38,6 +38,7 @@ export default function ShopPage() {
   const [params, setParams] = useSearchParams();
   const [sort, setSort] = useState('new');
   const [page, setPage] = useState(1);
+  const [filtersOpen, setFiltersOpen] = useState(false);
 
   const brand = params.get('brand') ?? '';
   const category = params.get('category') ?? '';
@@ -93,6 +94,60 @@ export default function ShopPage() {
   );
 
   const showSidebar = categories.length > 0 || brands.length > 0;
+  const activeFilterCount = (category ? 1 : 0) + (brand ? 1 : 0);
+
+  // Shared filter groups, reused by the desktop sidebar and the mobile drawer.
+  // `afterSelect` lets the mobile drawer close itself once a choice is made.
+  const renderFilterGroups = (afterSelect) => (
+    <>
+      {categories.length > 0 && (
+        <div>
+          <h3 className="text-[11px] uppercase tracking-wider-2 text-ink-muted mb-4">
+            {t('shop.filter_categories')}
+          </h3>
+          <ul className="space-y-1.5 text-sm">
+            <li>
+              {filterBtn(!category, t('shop.filter_all'), () => {
+                updateParam('category', '');
+                afterSelect?.();
+              })}
+            </li>
+            {categories.map((c) => (
+              <li key={c._id}>
+                {filterBtn(category === c.slug, local(c.name), () => {
+                  updateParam('category', c.slug);
+                  afterSelect?.();
+                })}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+      {brands.length > 0 && (
+        <div>
+          <h3 className="text-[11px] uppercase tracking-wider-2 text-ink-muted mb-4">
+            {t('shop.filter_brands')}
+          </h3>
+          <ul className="space-y-1.5 text-sm">
+            <li>
+              {filterBtn(!brand, t('shop.filter_all'), () => {
+                updateParam('brand', '');
+                afterSelect?.();
+              })}
+            </li>
+            {brands.map((b) => (
+              <li key={b._id}>
+                {filterBtn(brand === b.name, b.name, () => {
+                  updateParam('brand', b.name);
+                  afterSelect?.();
+                })}
+              </li>
+            ))}
+          </ul>
+        </div>
+      )}
+    </>
+  );
 
   return (
     <section className="container-app py-12 md:py-16">
@@ -104,7 +159,22 @@ export default function ShopPage() {
             {isLoading ? t('common.loading') : t('shop.count', { count: total })}
           </p>
         </div>
-        <div className="md:col-span-3 md:col-start-10 md:justify-self-end">
+        <div className="md:col-span-5 md:col-start-8 md:justify-self-end flex items-center gap-4">
+          {showSidebar && (
+            <button
+              type="button"
+              onClick={() => setFiltersOpen(true)}
+              className="lg:hidden inline-flex items-center gap-2 border border-ink/20 rounded-full px-4 py-2 text-sm font-medium text-ink hover:border-ink transition-colors"
+            >
+              <SlidersHorizontal size={15} />
+              {t('shop.filters')}
+              {activeFilterCount > 0 && (
+                <span className="grid place-items-center min-w-5 h-5 px-1 rounded-full bg-ink text-paper text-[11px] num">
+                  {activeFilterCount}
+                </span>
+              )}
+            </button>
+          )}
           <select
             value={sort}
             onChange={(e) => setSort(e.target.value)}
@@ -121,38 +191,7 @@ export default function ShopPage() {
       <div className={`grid gap-12 ${showSidebar ? 'lg:grid-cols-[220px_1fr]' : ''}`}>
         {showSidebar && (
           <aside className="hidden lg:block h-fit sticky top-24 space-y-8">
-            {categories.length > 0 && (
-              <div>
-                <h3 className="text-[11px] uppercase tracking-wider-2 text-ink-muted mb-4">
-                  {t('shop.filter_categories')}
-                </h3>
-                <ul className="space-y-1.5 text-sm">
-                  <li>{filterBtn(!category, t('shop.filter_all'), () => updateParam('category', ''))}</li>
-                  {categories.map((c) => (
-                    <li key={c._id}>
-                      {filterBtn(category === c.slug, local(c.name), () =>
-                        updateParam('category', c.slug)
-                      )}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-            {brands.length > 0 && (
-              <div>
-                <h3 className="text-[11px] uppercase tracking-wider-2 text-ink-muted mb-4">
-                  {t('shop.filter_brands')}
-                </h3>
-                <ul className="space-y-1.5 text-sm">
-                  <li>{filterBtn(!brand, t('shop.filter_all'), () => updateParam('brand', ''))}</li>
-                  {brands.map((b) => (
-                    <li key={b._id}>
-                      {filterBtn(brand === b.name, b.name, () => updateParam('brand', b.name))}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
+            {renderFilterGroups()}
           </aside>
         )}
 
@@ -241,6 +280,40 @@ export default function ShopPage() {
           )}
         </div>
       </div>
+
+      {/* Mobile filter drawer */}
+      {showSidebar && filtersOpen && (
+        <div className="fixed inset-0 z-50 lg:hidden">
+          <div
+            className="absolute inset-0 bg-ink/40 backdrop-blur-sm"
+            onClick={() => setFiltersOpen(false)}
+            aria-hidden="true"
+          />
+          <div className="absolute inset-y-0 start-0 w-[82%] max-w-sm bg-paper shadow-xl flex flex-col">
+            <div className="flex items-center justify-between px-6 py-5 border-b border-line">
+              <h2 className="text-[11px] uppercase tracking-wider-2 text-ink-muted">
+                {t('shop.filters')}
+              </h2>
+              <button
+                type="button"
+                onClick={() => setFiltersOpen(false)}
+                aria-label={t('common.back')}
+                className="grid place-items-center w-9 h-9 rounded-full hover:bg-chrome"
+              >
+                <X size={18} />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto px-6 py-6 space-y-8">
+              {renderFilterGroups(() => setFiltersOpen(false))}
+            </div>
+            <div className="px-6 py-4 border-t border-line">
+              <button onClick={() => setFiltersOpen(false)} className="btn-primary w-full">
+                {t('shop.filters_apply')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   );
 }

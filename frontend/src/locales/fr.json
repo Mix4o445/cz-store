@@ -163,6 +163,8 @@
     "filter_categories": "Catégories",
     "filter_brands": "Marques",
     "filter_all": "Toutes",
+    "filters": "Filtres",
+    "filters_apply": "Voir les produits",
     "empty_title": "Aucun produit ne correspond à vos critères.",
     "empty_hint": "Essayez de réinitialiser les filtres.",
     "page_prev": "Précédent",
