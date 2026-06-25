@@ -58,8 +58,10 @@ export async function createOrder(req, res, next) {
       };
     });
     const subtotal = enriched.reduce((s, i) => s + i.price * i.qty, 0);
-    const shipping_cost = enriched.reduce((s, i) => s + (i.deliveryFee ?? 0) * i.qty, 0);
-    const total = subtotal + shipping_cost;
+    // Delivery is negotiated directly with the customer (contact), not priced
+    // online — so orders carry no shipping charge.
+    const shipping_cost = 0;
+    const total = subtotal;
 
     const order = await ordersRepo.create({
       userId: req.user?.sub,

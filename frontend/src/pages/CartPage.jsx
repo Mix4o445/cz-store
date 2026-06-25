@@ -10,7 +10,7 @@ export default function CartPage() {
   const { t } = useTranslation();
   const local = useLocalized();
   const { items, updateQty, removeItem } = useCartStore();
-  const { items: enriched, subtotal, shipping, total } = useEnrichedCart();
+  const { items: enriched, subtotal } = useEnrichedCart();
 
   if (items.length === 0) {
     return (
@@ -72,15 +72,15 @@ export default function CartPage() {
         <dl className="space-y-3 text-sm">
           <div className="flex justify-between">
             <dt className="text-ink-muted">{t('cart.subtotal')}</dt>
-            <dd className="price">{formatPrice(total)}</dd>
+            <dd className="price">{formatPrice(subtotal)}</dd>
           </div>
           <div className="flex justify-between">
             <dt className="text-ink-muted">{t('cart.shipping')}</dt>
-            <dd className="price">{shipping === 0 ? t('cart.free') : formatPrice(shipping)}</dd>
+            <dd className="text-ink">{t('cart.shipping_negotiate')}</dd>
           </div>
           <div className="border-t border-line pt-3 flex justify-between font-display text-lg">
             <dt>{t('cart.total')}</dt>
-            <dd className="price">{formatPrice(total + shipping)}</dd>
+            <dd className="price">{formatPrice(subtotal)}</dd>
           </div>
         </dl>
         <Link to="/checkout" className="btn-primary w-full">{t('cart.checkout')}</Link>

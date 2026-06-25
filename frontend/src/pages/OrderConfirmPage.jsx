@@ -192,9 +192,7 @@ export default function OrderConfirmPage() {
               </div>
               <div className="flex justify-between">
                 <dt className="text-ink-muted">{t('cart.shipping')}</dt>
-                <dd className="price">
-                  {order.shipping_cost === 0 ? t('cart.free') : formatPrice(order.shipping_cost ?? 0)}
-                </dd>
+                <dd className="text-ink">{t('cart.shipping_negotiate')}</dd>
               </div>
               <div className="border-t border-line pt-3 flex justify-between font-display text-lg">
                 <dt>{t('cart.total')}</dt>
