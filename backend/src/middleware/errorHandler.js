@@ -8,6 +8,10 @@ function isDbUnavailable(err) {
   if (!err) return false;
   if (['MongooseServerSelectionError', 'MongoNotConnectedError'].includes(err.name)) return true;
   const msg = String(err.message || '');
+  // Supabase/PostgREST/network reachability problems.
+  if (err.name === 'SupabaseError' && /fetch failed|network|ENOTFOUND|ECONNREFUSED|timeout/i.test(msg)) {
+    return true;
+  }
   return /before initial connection is complete|client must be connected|topology was destroyed|ECONNREFUSED.*27017|server selection/i.test(
     msg
   );

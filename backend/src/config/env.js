@@ -15,6 +15,9 @@ export const env = {
   nodeEnv: process.env.NODE_ENV || 'development',
   isProd: process.env.NODE_ENV === 'production',
   mongoUri: process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/coolzone',
+  supabaseUrl: process.env.SUPABASE_URL || '',
+  supabaseServiceKey:
+    process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.SUPABASE_SERVICE_KEY || '',
   jwtSecret: process.env.JWT_SECRET || 'dev-secret-change-me',
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || '7d',
   clientUrl: process.env.CLIENT_URL || 'http://localhost:5173',

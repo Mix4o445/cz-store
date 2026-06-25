@@ -1,22 +1,22 @@
-import mongoose from 'mongoose';
+import { supabase } from './supabase.js';
 import { env } from './env.js';
 
-mongoose.set('strictQuery', true);
-// Don't buffer model commands when not connected — fail fast so the API
-// responds quickly instead of hanging until bufferTimeoutMS.
-mongoose.set('bufferCommands', false);
-
-mongoose.connection.on('connected', () => console.log('[db] connected'));
-mongoose.connection.on('disconnected', () => console.warn('[db] disconnected'));
-mongoose.connection.on('error', (err) => console.error('[db] error:', err.message));
-
+// With Supabase there is no persistent connection to open like Mongoose — the
+// client is stateless over HTTPS. We do a lightweight probe at boot so startup
+// logs clearly show whether the database is reachable and configured.
 export async function connectDB() {
-  try {
-    await mongoose.connect(env.mongoUri, { serverSelectionTimeoutMS: 5000 });
-  } catch (err) {
-    console.error('[db] initial connection failed:', err.message);
+  if (!env.supabaseUrl || !env.supabaseServiceKey) {
+    console.warn('[db] Supabase not configured (SUPABASE_URL / SUPABASE_SERVICE_ROLE_KEY missing)');
     if (env.isProd) process.exit(1);
-    // In dev: keep server up so UI can still render and we can show clear errors.
-    // Mongoose will keep retrying in the background.
+    return;
+  }
+  try {
+    const { error } = await supabase.from('users').select('id', { head: true, count: 'exact' });
+    if (error) throw error;
+    console.log('[db] Supabase connected');
+  } catch (err) {
+    console.error('[db] Supabase connection failed:', err.message);
+    if (env.isProd) process.exit(1);
+    // In dev keep the server up so the UI can render and surface clear errors.
   }
 }

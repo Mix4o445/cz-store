@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { User } from '../models/User.model.js';
+import { randomUUID } from 'node:crypto';
+import { usersRepo } from '../db/users.repo.js';
 import { ok } from '../utils/apiResponse.js';
 import { badRequest, notFound, conflict } from '../utils/apiError.js';
 
@@ -25,14 +26,11 @@ export async function updateProfile(req, res, next) {
     if (!parsed.success) throw badRequest('Invalid payload', parsed.error.flatten());
 
     if (parsed.data.email) {
-      const exists = await User.findOne({ email: parsed.data.email, _id: { $ne: req.user.sub } });
+      const exists = await usersRepo.emailExists(parsed.data.email, req.user.sub);
       if (exists) throw conflict('Email already in use');
     }
 
-    const user = await User.findByIdAndUpdate(req.user.sub, parsed.data, {
-      new: true,
-      runValidators: true,
-    });
+    const user = await usersRepo.updateById(req.user.sub, parsed.data);
     if (!user) throw notFound('User not found');
     return ok(res, user, 'Profile updated');
   } catch (e) {
@@ -42,9 +40,9 @@ export async function updateProfile(req, res, next) {
 
 export async function listAddresses(req, res, next) {
   try {
-    const user = await User.findById(req.user.sub);
-    if (!user) throw notFound();
-    return ok(res, user.addresses ?? []);
+    const raw = await usersRepo._rawById(req.user.sub);
+    if (!raw) throw notFound();
+    return ok(res, raw.addresses ?? []);
   } catch (e) {
     next(e);
   }
@@ -55,19 +53,21 @@ export async function addAddress(req, res, next) {
     const parsed = addressSchema.safeParse(req.body);
     if (!parsed.success) throw badRequest('Invalid payload', parsed.error.flatten());
 
-    const user = await User.findById(req.user.sub);
-    if (!user) throw notFound();
+    const raw = await usersRepo._rawById(req.user.sub);
+    if (!raw) throw notFound();
+    const addresses = raw.addresses ?? [];
 
-    if (parsed.data.isDefault) {
-      user.addresses.forEach((a) => {
+    const next_ = { ...parsed.data, _id: randomUUID() };
+    if (next_.isDefault) {
+      addresses.forEach((a) => {
         a.isDefault = false;
       });
-    } else if (user.addresses.length === 0) {
-      // First address auto-default
-      parsed.data.isDefault = true;
+    } else if (addresses.length === 0) {
+      next_.isDefault = true;
     }
-    user.addresses.push(parsed.data);
-    await user.save();
+    addresses.push(next_);
+
+    const user = await usersRepo.setAddresses(req.user.sub, addresses);
     return ok(res, user.addresses, 'Address added');
   } catch (e) {
     next(e);
@@ -79,18 +79,20 @@ export async function updateAddress(req, res, next) {
     const parsed = addressSchema.partial().safeParse(req.body);
     if (!parsed.success) throw badRequest('Invalid payload', parsed.error.flatten());
 
-    const user = await User.findById(req.user.sub);
-    if (!user) throw notFound();
-    const addr = user.addresses.id(req.params.id);
+    const raw = await usersRepo._rawById(req.user.sub);
+    if (!raw) throw notFound();
+    const addresses = raw.addresses ?? [];
+    const addr = addresses.find((a) => String(a._id) === req.params.id);
     if (!addr) throw notFound('Address not found');
 
     if (parsed.data.isDefault) {
-      user.addresses.forEach((a) => {
-        if (a._id.toString() !== req.params.id) a.isDefault = false;
+      addresses.forEach((a) => {
+        if (String(a._id) !== req.params.id) a.isDefault = false;
       });
     }
     Object.assign(addr, parsed.data);
-    await user.save();
+
+    const user = await usersRepo.setAddresses(req.user.sub, addresses);
     return ok(res, user.addresses, 'Address updated');
   } catch (e) {
     next(e);
@@ -99,16 +101,19 @@ export async function updateAddress(req, res, next) {
 
 export async function deleteAddress(req, res, next) {
   try {
-    const user = await User.findById(req.user.sub);
-    if (!user) throw notFound();
-    const addr = user.addresses.id(req.params.id);
+    const raw = await usersRepo._rawById(req.user.sub);
+    if (!raw) throw notFound();
+    const addresses = raw.addresses ?? [];
+    const addr = addresses.find((a) => String(a._id) === req.params.id);
     if (!addr) throw notFound('Address not found');
-    addr.deleteOne();
-    // If we removed the default and there are other addresses, promote the first one
-    if (addr.isDefault && user.addresses.length > 0) {
-      user.addresses[0].isDefault = true;
+
+    const remaining = addresses.filter((a) => String(a._id) !== req.params.id);
+    // If we removed the default and others remain, promote the first one.
+    if (addr.isDefault && remaining.length > 0) {
+      remaining[0].isDefault = true;
     }
-    await user.save();
+
+    const user = await usersRepo.setAddresses(req.user.sub, remaining);
     return ok(res, user.addresses, 'Address deleted');
   } catch (e) {
     next(e);

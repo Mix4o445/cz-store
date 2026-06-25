@@ -1,13 +1,12 @@
 /**
- * Promote a user to admin role.
+ * Promote a user to admin role (Supabase).
  *
  * Usage:
  *   npm run promote-admin -- user@example.com
  *   node scripts/promote-admin.js user@example.com [--demote]
  */
 import 'dotenv/config';
-import mongoose from 'mongoose';
-import { User } from '../src/models/User.model.js';
+import { supabase } from '../src/config/supabase.js';
 
 const args = process.argv.slice(2);
 const demote = args.includes('--demote');
@@ -19,22 +18,22 @@ if (!email) {
 }
 
 const role = demote ? 'user' : 'admin';
-const uri = process.env.MONGODB_URI || 'mongodb://127.0.0.1:27017/coolzone';
 
 try {
-  await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
-  const user = await User.findOneAndUpdate(
-    { email: email.toLowerCase() },
-    { role },
-    { new: true }
-  );
-  if (!user) {
+  const { data, error } = await supabase
+    .from('users')
+    .update({ role })
+    .eq('email', email.toLowerCase())
+    .select('email, role')
+    .maybeSingle();
+
+  if (error) throw error;
+  if (!data) {
     console.error(`No user found with email "${email}".`);
     process.exit(2);
   }
-  console.log(`✓ ${user.email} is now '${user.role}'.`);
+  console.log(`✓ ${data.email} is now '${data.role}'.`);
   console.log('  → Sign out and sign back in for the new role to take effect.');
-  await mongoose.disconnect();
   process.exit(0);
 } catch (err) {
   console.error('Promote failed:', err.message);

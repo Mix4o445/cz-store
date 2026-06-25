@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { User } from '../models/User.model.js';
+import { usersRepo } from '../db/users.repo.js';
+import { comparePassword } from '../utils/password.js';
 import { generateToken } from '../utils/generateToken.js';
 import { ok, created } from '../utils/apiResponse.js';
 import { badRequest, conflict, unauthorized, notFound } from '../utils/apiError.js';
@@ -36,10 +37,9 @@ export async function register(req, res, next) {
     if (!parsed.success) throw badRequest('Invalid payload', parsed.error.flatten());
     const { name, email, password, phone } = parsed.data;
 
-    const exists = await User.findOne({ email });
-    if (exists) throw conflict('Email already registered');
+    if (await usersRepo.emailExists(email)) throw conflict('Email already registered');
 
-    const user = await User.create({ name, email, password, phone });
+    const user = await usersRepo.create({ name, email, password, phone });
     const token = generateToken({ sub: user._id.toString(), role: user.role });
     setAuthCookie(res, token);
     return created(res, { user, token }, 'Account created');
@@ -54,12 +54,13 @@ export async function login(req, res, next) {
     if (!parsed.success) throw badRequest('Invalid payload', parsed.error.flatten());
     const { email, password } = parsed.data;
 
-    const user = await User.findOne({ email }).select('+password');
+    const user = await usersRepo.findByEmail(email, { withPassword: true });
     if (!user) throw unauthorized('Invalid credentials');
 
-    const match = await user.comparePassword(password);
+    const match = await comparePassword(password, user.password);
     if (!match) throw unauthorized('Invalid credentials');
 
+    delete user.password;
     const token = generateToken({ sub: user._id.toString(), role: user.role });
     setAuthCookie(res, token);
     return ok(res, { user, token }, 'Logged in');
@@ -79,7 +80,7 @@ export async function logout(_req, res, next) {
 
 export async function me(req, res, next) {
   try {
-    const user = await User.findById(req.user.sub);
+    const user = await usersRepo.findById(req.user.sub);
     if (!user) throw notFound('User not found');
     return ok(res, user);
   } catch (e) {
@@ -91,12 +92,11 @@ export async function changePassword(req, res, next) {
   try {
     const parsed = passwordSchema.safeParse(req.body);
     if (!parsed.success) throw badRequest('Invalid payload', parsed.error.flatten());
-    const user = await User.findById(req.user.sub).select('+password');
+    const user = await usersRepo.findById(req.user.sub, { withPassword: true });
     if (!user) throw notFound('User not found');
-    const match = await user.comparePassword(parsed.data.current);
+    const match = await comparePassword(parsed.data.current, user.password);
     if (!match) throw unauthorized('Current password is incorrect');
-    user.password = parsed.data.next;
-    await user.save();
+    await usersRepo.updatePassword(user._id, parsed.data.next);
     return ok(res, null, 'Password updated');
   } catch (e) {
     next(e);
