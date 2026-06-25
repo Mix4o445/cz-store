@@ -3,7 +3,6 @@ import { useTranslation } from 'react-i18next';
 export default function PromoStrip() {
   const { t } = useTranslation();
   const items = [
-    t('home.promo_free_shipping'),
     t('home.promo_warranty'),
     t('home.promo_install'),
     t('home.promo_payment'),

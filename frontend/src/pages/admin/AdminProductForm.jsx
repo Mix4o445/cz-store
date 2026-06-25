@@ -472,7 +472,7 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
             <input type="text" value={form.specs.noise} onChange={(e) => setField('specs.noise', e.target.value)} className={inputCls} placeholder="19 dB" />
           </Field>
           <Field label={t('admin.products.specs_warranty')}>
-            <input type="text" value={form.specs.warranty} onChange={(e) => setField('specs.warranty', e.target.value)} className={inputCls} placeholder="3 ans" />
+            <input type="text" value={form.specs.warranty} onChange={(e) => setField('specs.warranty', e.target.value)} className={inputCls} placeholder="1 an" />
           </Field>
           <div className="flex flex-wrap items-end gap-6 pb-2">
             <label className="inline-flex items-center gap-2 text-sm">

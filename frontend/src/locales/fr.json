@@ -20,7 +20,7 @@
     "hero_sub": "Climatisation premium pour les foyers et les bureaux marocains. Sélectionnée par CoolZone, installée par des experts.",
     "hero_cta_primary": "Découvrir la collection",
     "hero_cta_secondary": "Configurer un projet",
-    "hero_strip": "A+++ · Inverter · Wi-Fi · 5 ans de garantie · Livraison 24h",
+    "hero_strip": "A+++ · Inverter · Wi-Fi · Silencieux",
 
     "ticker_a": "Climatisation",
     "ticker_b": "Chauffage",
@@ -47,14 +47,13 @@
     "brands_eyebrow": "Marques",
     "brands_title": "Les meilleurs constructeurs au monde.",
 
-    "promo_free_shipping": "Livraison gratuite à Casablanca dès 3 000 MAD",
-    "promo_warranty": "Garantie constructeur jusqu'à 5 ans",
+    "promo_warranty": "Climatiseurs garantis 1 an",
     "promo_install": "Installation professionnelle disponible",
     "promo_payment": "Paiement à la livraison disponible"
   },
   "why": {
     "warranty_title": "Garantie officielle",
-    "warranty_text": "Tous nos produits sont 100% authentiques avec garantie constructeur.",
+    "warranty_text": "Climatiseurs garantis 1 an. Tous nos produits sont 100% authentiques.",
     "delivery_title": "Livraison rapide",
     "delivery_text": "Partout au Maroc, en 24 à 72 heures, suivi en temps réel.",
     "support_title": "Support 7j/7",
@@ -96,7 +95,7 @@
     "select_capacity": "Choisissez une capacité",
     "not_found": "Produit introuvable",
     "delivery_hint": "Livraison sous 24-72h",
-    "warranty_hint": "Garantie constructeur"
+    "warranty_hint": "Garantie 1 an sur les climatiseurs"
   },
   "cart": {
     "title": "Panier",
@@ -401,7 +400,7 @@
       "price_hint_variants": "Optionnel — sera dérivé de la variante la moins chère.",
       "stock": "Stock",
       "delivery_fee": "Frais de livraison (MAD)",
-      "delivery_fee_hint": "Par article. Multiplié par la quantité au moment de la commande. Mettre 0 pour livraison gratuite.",
+      "delivery_fee_hint": "Par article. Multiplié par la quantité au moment de la commande. Mettre 0 pour aucun frais de livraison.",
       "tags": "Tags",
       "tags_hint": "Appuyez sur Entrée pour ajouter un tag.",
       "images": "Images (URLs)",
