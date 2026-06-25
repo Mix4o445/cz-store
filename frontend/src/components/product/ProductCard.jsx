@@ -89,12 +89,16 @@ export default function ProductCard({ product }) {
             send the user to the product page so they can pick a capacity. */}
         <div className="absolute inset-x-3 bottom-3 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hidden md:block">
           {hasVariants ? (
-            <Link
-              to={`/product/${product.slug}`}
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                navigate(`/product/${product.slug}`);
+              }}
               className="block w-full text-center bg-ink text-paper text-xs uppercase tracking-wider-1 font-medium py-3 rounded-full hover:bg-primary transition-colors"
             >
               {t('product.select_capacity')}
-            </Link>
+            </button>
           ) : (
             <button
               type="button"
