@@ -4,9 +4,10 @@ const required = ['JWT_SECRET'];
 
 for (const key of required) {
   if (!process.env[key]) {
-    const msg = `[env] Missing required env var: ${key}`;
-    if (process.env.NODE_ENV === 'production') throw new Error(msg);
-    console.warn(msg);
+    // Warn but never throw at import time — in a serverless function a thrown
+    // module-init error becomes an opaque 502. The app stays up and surfaces a
+    // clear error instead.
+    console.warn(`[env] Missing required env var: ${key}`);
   }
 }
 
