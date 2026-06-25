@@ -4,7 +4,6 @@ export default function PromoStrip() {
   const { t } = useTranslation();
   const items = [
     t('home.promo_warranty'),
-    t('home.promo_install'),
     t('home.promo_payment'),
   ];
   // Duplicate for seamless marquee
