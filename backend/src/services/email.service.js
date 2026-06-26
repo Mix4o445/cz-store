@@ -129,7 +129,7 @@ function shellLayout({ title, body, preheader = '' }) {
         <tr>
           <td style="padding:24px 32px;background:${PALETTE.ink};color:${PALETTE.paper};">
             <table width="100%"><tr>
-              <td style="font-family:'Space Grotesk',Arial,sans-serif;font-size:18px;font-weight:600;letter-spacing:-0.02em;">CoolZone</td>
+              <td><img src="${env.clientUrl}/logo-email.png" alt="CoolZone" width="140" style="display:block;width:140px;height:auto;border:0;" /></td>
               <td align="right" style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:rgba(255,255,255,0.6);">Climatisation Premium</td>
             </tr></table>
           </td>
