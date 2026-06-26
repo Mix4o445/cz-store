@@ -64,6 +64,9 @@ function AddressForm({ initial, onCancel, onSubmit, isPending, error }) {
         type="tel"
         required
         minLength={6}
+        pattern="[0-9]+"
+        inputMode="numeric"
+        title={t('auth.phone')}
         value={form.phone}
         onChange={onChange}
       />

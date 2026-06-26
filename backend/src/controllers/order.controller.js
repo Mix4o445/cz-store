@@ -3,7 +3,7 @@ import { ordersRepo } from '../db/orders.repo.js';
 import { productsRepo } from '../db/products.repo.js';
 import { ok, created } from '../utils/apiResponse.js';
 import { badRequest, notFound, forbidden } from '../utils/apiError.js';
-import { sendOrderEmails } from '../services/email.service.js';
+import { sendOrderEmails, sendOrderStatusEmails } from '../services/email.service.js';
 import { isUuid } from '../utils/ids.js';
 
 const orderSchema = z.object({
@@ -18,7 +18,7 @@ const orderSchema = z.object({
     .min(1),
   shipping: z.object({
     name: z.string().min(2),
-    phone: z.string().min(6),
+    phone: z.string().regex(/^[0-9]+$/, 'Phone must contain only numbers').min(6),
     email: z.string().email().optional().or(z.literal('')),
     address: z.string().min(3),
     city: z.string().min(2),
@@ -130,6 +130,13 @@ export async function updateStatus(req, res, next) {
     if (!allowed.includes(status)) throw badRequest('Invalid status');
     const order = await ordersRepo.updateStatus(req.params.id, status);
     if (!order) throw notFound('Order not found');
+
+    // Notify customer + admin of the status change without blocking the response.
+    ordersRepo
+      .byId(order._id, { withUser: true })
+      .then((populated) => sendOrderStatusEmails(populated ?? order, status))
+      .catch((e) => console.error('[email] status pipeline failed:', e.message));
+
     return ok(res, order);
   } catch (e) {
     next(e);

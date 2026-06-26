@@ -224,6 +224,9 @@ export default function CheckoutPage() {
                   type="tel"
                   required
                   minLength={6}
+                  pattern="[0-9]+"
+                  inputMode="numeric"
+                  title={t('checkout.form_phone')}
                   value={shipping.phone}
                   onChange={onChange}
                   className={inputCls}

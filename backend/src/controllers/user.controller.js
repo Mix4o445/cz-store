@@ -7,13 +7,13 @@ import { badRequest, notFound, conflict } from '../utils/apiError.js';
 const profileSchema = z.object({
   name: z.string().min(2).optional(),
   email: z.string().email().optional(),
-  phone: z.string().optional().or(z.literal('')),
+  phone: z.string().regex(/^[0-9]+$/, 'Phone must contain only numbers').optional().or(z.literal('')),
 });
 
 const addressSchema = z.object({
   label: z.string().optional().or(z.literal('')),
   name: z.string().min(2),
-  phone: z.string().min(6),
+  phone: z.string().regex(/^[0-9]+$/, 'Phone must contain only numbers').min(6),
   address: z.string().min(3),
   city: z.string().min(2),
   wilaya: z.string().optional().or(z.literal('')),

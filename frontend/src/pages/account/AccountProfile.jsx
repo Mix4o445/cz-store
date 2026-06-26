@@ -87,6 +87,9 @@ export default function AccountProfile() {
           name="phone"
           type="tel"
           autoComplete="tel"
+          pattern="[0-9]+"
+          inputMode="numeric"
+          title={t('auth.phone')}
           value={form.phone}
           onChange={onChange}
         />

@@ -302,3 +302,114 @@ export async function sendOrderEmails(order) {
   // Run in parallel; surface errors but don't block.
   await Promise.allSettled(tasks);
 }
+
+
+
+// ---------------------------------------------------------------------------
+// Order status-update notifications (sent to customer + admin on every change)
+// ---------------------------------------------------------------------------
+
+const STATUS_LABELS = {
+  pending: 'En attente',
+  confirmed: 'Confirmée',
+  shipped: 'Expédiée',
+  delivered: 'Livrée',
+  cancelled: 'Annulée',
+};
+
+const STATUS_MESSAGES = {
+  pending: 'Votre commande a été enregistrée et est en attente de traitement.',
+  confirmed: 'Votre commande a été confirmée. Notre équipe prépare votre colis.',
+  shipped: 'Votre commande a été expédiée et est en route vers vous.',
+  delivered: 'Votre commande a été livrée. Merci pour votre confiance !',
+  cancelled: 'Votre commande a été annulée. Contactez-nous pour toute question.',
+};
+
+function statusBadgeHtml(status) {
+  const label = STATUS_LABELS[status] ?? status;
+  return `<span style="display:inline-block;padding:6px 14px;border-radius:999px;background:${PALETTE.ink};color:${PALETTE.paper};font-size:12px;letter-spacing:0.06em;text-transform:uppercase;font-weight:600;">${label}</span>`;
+}
+
+function customerStatusHtml(order, status) {
+  const id = shortId(order._id);
+  const body = `
+    <tr><td style="padding:32px;">
+      <p style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:${PALETTE.muted};margin:0 0 12px;">Mise à jour de commande</p>
+      <h1 style="font-family:'Space Grotesk',Arial,sans-serif;margin:0 0 16px;font-size:28px;letter-spacing:-0.02em;">Commande #${id}</h1>
+      <div style="margin:0 0 16px;">${statusBadgeHtml(status)}</div>
+      <p style="margin:0 0 8px;color:${PALETTE.ink};">Bonjour ${order.shipping?.name ?? ''},</p>
+      <p style="margin:0 0 24px;color:${PALETTE.muted};">${STATUS_MESSAGES[status] ?? 'Le statut de votre commande a été mis à jour.'}</p>
+
+      <table width="100%" style="border-collapse:collapse;font-size:14px;">${itemRowsHtml(order.items)}${totalsHtml(order)}</table>
+
+      <div style="margin-top:24px;">
+        <p style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:${PALETTE.muted};margin:0 0 8px;">Livraison</p>
+        ${shippingBlockHtml(order)}
+      </div>
+
+      <p style="margin-top:32px;font-size:14px;color:${PALETTE.muted};">— L'équipe CoolZone</p>
+      <a href="${env.clientUrl}/orders/${order._id}" style="display:inline-block;margin-top:16px;background:${PALETTE.ink};color:${PALETTE.paper};text-decoration:none;padding:12px 24px;border-radius:999px;font-weight:600;font-size:14px;">Voir ma commande</a>
+    </td></tr>`;
+  return shellLayout({
+    title: `Commande #${id} — ${STATUS_LABELS[status] ?? status}`,
+    preheader: `Votre commande #${id} est ${(STATUS_LABELS[status] ?? status).toLowerCase()}`,
+    body,
+  });
+}
+
+function adminStatusHtml(order, status) {
+  const id = shortId(order._id);
+  const customer = order.user
+    ? `${order.user.name} · ${order.user.email}`
+    : `${order.shipping?.name ?? '—'} (invité)`;
+  const body = `
+    <tr><td style="padding:32px;">
+      <p style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:${PALETTE.muted};margin:0 0 12px;">Statut mis à jour</p>
+      <h1 style="font-family:'Space Grotesk',Arial,sans-serif;margin:0 0 16px;font-size:28px;letter-spacing:-0.02em;">#${id}</h1>
+      <div style="margin:0 0 16px;">${statusBadgeHtml(status)}</div>
+      <p style="margin:0 0 24px;color:${PALETTE.muted};">${fmtDate(order.updatedAt ?? order.createdAt)} · ${customer}</p>
+
+      <table width="100%" style="border-collapse:collapse;font-size:14px;">${itemRowsHtml(order.items)}${totalsHtml(order)}</table>
+
+      <div style="margin-top:24px;">
+        <p style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:${PALETTE.muted};margin:0 0 8px;">Livraison</p>
+        ${shippingBlockHtml(order)}
+      </div>
+
+      <a href="${env.clientUrl}/admin/orders/${order._id}" style="display:inline-block;margin-top:24px;background:${PALETTE.primary};color:${PALETTE.paper};text-decoration:none;padding:12px 24px;border-radius:999px;font-weight:600;font-size:14px;">Ouvrir dans l'admin</a>
+    </td></tr>`;
+  return shellLayout({
+    title: `Commande #${id} — ${STATUS_LABELS[status] ?? status}`,
+    preheader: `#${id} → ${STATUS_LABELS[status] ?? status} · ${customer}`,
+    body,
+  });
+}
+
+export async function sendOrderStatusEmails(order, status) {
+  const id = shortId(order._id);
+  const label = STATUS_LABELS[status] ?? status;
+  const tasks = [];
+
+  if (order.shipping?.email) {
+    tasks.push(
+      sendMail({
+        to: order.shipping.email,
+        subject: `Commande #${id} — ${label} — CoolZone`,
+        html: customerStatusHtml(order, status),
+      })
+    );
+  }
+
+  if (env.adminEmail) {
+    tasks.push(
+      sendMail({
+        to: env.adminEmail,
+        subject: `Commande #${id} mise à jour : ${label}`,
+        html: adminStatusHtml(order, status),
+      })
+    );
+  }
+
+  // Run in parallel; surface errors but don't block.
+  await Promise.allSettled(tasks);
+}

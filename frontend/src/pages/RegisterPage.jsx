@@ -33,7 +33,7 @@ export default function RegisterPage() {
         {[
           { name: 'name', type: 'text', label: t('auth.name'), autoComplete: 'name', required: true, minLength: 2 },
           { name: 'email', type: 'email', label: t('auth.email'), autoComplete: 'email', required: true },
-          { name: 'phone', type: 'tel', label: t('auth.phone'), autoComplete: 'tel' },
+          { name: 'phone', type: 'tel', label: t('auth.phone'), autoComplete: 'tel', required: true, pattern: '[0-9]+', inputMode: 'numeric', title: 'Phone must contain only numbers' },
           { name: 'password', type: 'password', label: t('auth.password'), autoComplete: 'new-password', required: true, minLength: 6, hint: t('register_page.password_hint') },
         ].map((f) => (
           <label key={f.name} className="block">
@@ -44,6 +44,9 @@ export default function RegisterPage() {
               autoComplete={f.autoComplete}
               required={f.required}
               minLength={f.minLength}
+              pattern={f.pattern}
+              inputMode={f.inputMode}
+              title={f.title}
               value={form[f.name]}
               onChange={onChange}
               className="mt-2 w-full bg-transparent border-b border-ink/20 px-0 py-2.5 outline-none focus:border-ink"

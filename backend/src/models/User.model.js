@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema(
     name: { type: String, required: true, trim: true },
     email: { type: String, required: true, unique: true, lowercase: true, trim: true, index: true },
     password: { type: String, required: true, select: false, minlength: 6 },
-    phone: { type: String, trim: true },
+    phone: { type: String, trim: true, required: true, match: [/^[0-9]+$/, 'Phone must contain only numbers'] },
     role: { type: String, enum: ['user', 'admin'], default: 'user' },
     addresses: [
       {
