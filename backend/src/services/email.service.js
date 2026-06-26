@@ -165,7 +165,7 @@ function itemRowsHtml(items) {
 function totalsHtml(order) {
   return `
   <tr><td style="padding-top:12px;color:${PALETTE.muted};">Sous-total</td><td align="right" style="padding-top:12px;font-family:'JetBrains Mono',monospace;">${fmtPrice(order.subtotal)}</td></tr>
-  <tr><td style="color:${PALETTE.muted};">Livraison</td><td align="right" style="font-family:'JetBrains Mono',monospace;">${order.shipping_cost === 0 ? 'Gratuit' : fmtPrice(order.shipping_cost)}</td></tr>
+  <tr><td style="color:${PALETTE.muted};">Livraison</td><td align="right" style="font-family:'JetBrains Mono',monospace;">${order.shipping_cost > 0 ? fmtPrice(order.shipping_cost) : 'À convenir'}</td></tr>
   <tr><td style="padding-top:8px;border-top:1px solid ${PALETTE.line};font-weight:700;font-size:18px;">Total</td><td align="right" style="padding-top:8px;border-top:1px solid ${PALETTE.line};font-family:'JetBrains Mono',monospace;font-weight:700;font-size:18px;">${fmtPrice(order.total)}</td></tr>`;
 }
 
