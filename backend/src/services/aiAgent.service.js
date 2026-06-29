@@ -5,6 +5,7 @@ import { categoriesRepo } from '../db/categories.repo.js';
 import { brandsRepo } from '../db/brands.repo.js';
 import { usersRepo } from '../db/users.repo.js';
 import { reviewsRepo } from '../db/reviews.repo.js';
+import { agentMemoryRepo } from '../db/agentMemory.repo.js';
 import { sendOrderStatusEmails } from './email.service.js';
 import { ApiError } from '../utils/apiError.js';
 
@@ -504,6 +505,27 @@ const TOOL_IMPL = {
       return { error: `fetch_url failed: ${e.message}` };
     }
   },
+
+  // ---- Long-term memory ---------------------------------------------------
+  async save_memory({ content } = {}) {
+    if (!content || !content.trim()) return { error: 'content is required' };
+    const res = await agentMemoryRepo.add(content.trim());
+    if (res.missing) return { error: 'Memory storage not set up. Run the agent_memory migration in Supabase.' };
+    return { ok: true, memory: res };
+  },
+
+  async list_memory() {
+    const { items, missing } = await agentMemoryRepo.list();
+    if (missing) return { items: [], note: 'Memory storage not set up yet.' };
+    return items;
+  },
+
+  async delete_memory({ id } = {}) {
+    if (!id) return { error: 'id is required' };
+    const res = await agentMemoryRepo.remove(id);
+    if (res.missing) return { error: 'Memory storage not set up.' };
+    return { ok: true };
+  },
 };
 
 // Mutating tools — used to flag actions in the response so the UI can refresh.
@@ -523,6 +545,8 @@ const MUTATING_TOOLS = new Set([
   'delete_brand',
   'set_user_role',
   'delete_review',
+  'save_memory',
+  'delete_memory',
 ]);
 
 // ---------------------------------------------------------------------------
@@ -722,6 +746,14 @@ const TOOLS = [
     { url: str('Full http(s) URL') },
     ['url']
   ),
+  fn(
+    'save_memory',
+    'Store a durable fact to remember across all future conversations (e.g. admin preferences, business rules, recurring instructions). Use when the admin says "remember…" or shares a lasting preference.',
+    { content: str('The fact to remember, written concisely') },
+    ['content']
+  ),
+  fn('list_memory', 'List everything currently stored in long-term memory.'),
+  fn('delete_memory', 'Delete a stored memory by id.', { id: str('Memory id') }, ['id']),
 ];
 
 function fn(name, description, properties = {}, required = []) {
@@ -745,6 +777,7 @@ Guidelines:
 - To edit a product variant, first call list_variants to get the variantId, then add_variant / update_variant / delete_variant.
 - Look up ids with list_* tools before updating or deleting by id. Never invent ids.
 - Use web_search (and fetch_url to read a page) when the admin asks about current prices, specs, trends, or anything not in the store database.
+- Memory: when the admin shares a lasting preference, rule, or asks you to "remember" something, call save_memory so it persists across conversations. Use the durable facts already provided to you. Don't save transient or one-off details.
 - Before any destructive action (deleting a product, variant, category, brand, or review), confirm with the admin unless they already clearly approved it.
 - When you change data, briefly summarize what changed (names and key values), not raw ids.
 - If a tool returns an error, explain it plainly and suggest a fix.
@@ -795,7 +828,20 @@ export async function runAgent(history = []) {
     .slice(-MAX_HISTORY)
     .map((m) => ({ role: m.role, content: m.content }));
 
-  const messages = [{ role: 'system', content: SYSTEM_PROMPT }, ...trimmed];
+  // Load long-term memory and fold it into the system prompt (best-effort).
+  let systemContent = SYSTEM_PROMPT;
+  try {
+    const { items } = await agentMemoryRepo.list(50);
+    if (items.length) {
+      systemContent +=
+        '\n\nLong-term memory (durable facts you previously saved):\n' +
+        items.map((m) => `- ${m.content}`).join('\n');
+    }
+  } catch {
+    /* memory unavailable — proceed without it */
+  }
+
+  const messages = [{ role: 'system', content: systemContent }, ...trimmed];
   const actions = [];
 
   for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {

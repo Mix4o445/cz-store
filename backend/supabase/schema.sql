@@ -145,6 +145,16 @@ create index if not exists orders_user_idx   on orders (user_id);
 create index if not exists orders_status_idx on orders (status);
 
 -- ---------------------------------------------------------------------------
+-- AGENT MEMORY (long-term notes for the AI admin assistant)
+-- ---------------------------------------------------------------------------
+create table if not exists agent_memory (
+  id          uuid primary key default gen_random_uuid(),
+  content     text not null,
+  created_at  timestamptz not null default now()
+);
+create index if not exists agent_memory_created_idx on agent_memory (created_at desc);
+
+-- ---------------------------------------------------------------------------
 -- updated_at auto-touch trigger (mirrors Mongoose { timestamps: true })
 -- ---------------------------------------------------------------------------
 create or replace function set_updated_at() returns trigger as $$
