@@ -112,6 +112,13 @@ function toTags(v) {
   return arr.map((t) => String(t).trim().toLowerCase()).filter(Boolean);
 }
 
+// Coerce images into a clean string array (model may send a single URL string).
+function toImages(v) {
+  if (v == null) return undefined;
+  const arr = Array.isArray(v) ? v : [v];
+  return arr.map((u) => String(u).trim()).filter(Boolean);
+}
+
 // Mirror the REST controller: derive base price/stock from variants when set.
 function deriveFromVariants(payload) {
   if (Array.isArray(payload.variants) && payload.variants.length > 0) {
@@ -188,7 +195,7 @@ const TOOL_IMPL = {
       isFeatured: rest.isFeatured != null ? toBool(rest.isFeatured) : undefined,
       isPromo: rest.isPromo != null ? toBool(rest.isPromo) : undefined,
       priceOld: rest.priceOld != null ? Number(rest.priceOld) : undefined,
-      images: rest.images,
+      images: toImages(rest.images),
       specs: cleanSpecs(rest.specs),
       variants: variants.length ? variants : undefined,
     };
@@ -215,7 +222,7 @@ const TOOL_IMPL = {
       };
     }
     if (fields.specs !== undefined) payload.specs = cleanSpecs(fields.specs);
-    if (fields.images !== undefined) payload.images = fields.images;
+    if (fields.images !== undefined) payload.images = toImages(fields.images);
     if (fields.variants !== undefined) {
       payload.variants = normalizeVariants(fields.variants);
       deriveFromVariants(payload);

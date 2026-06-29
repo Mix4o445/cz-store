@@ -63,7 +63,7 @@ export function mapProduct(row) {
     category: row.category ?? undefined,
     price: num(row.price),
     priceOld: row.price_old != null ? num(row.price_old) : undefined,
-    images: row.images ?? [],
+    images: Array.isArray(row.images) ? row.images : row.images ? [row.images] : [],
     specs: row.specs ?? {},
     stock: row.stock ?? 0,
     rating: num(row.rating) ?? 0,
