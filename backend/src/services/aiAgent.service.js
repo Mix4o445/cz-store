@@ -4,6 +4,7 @@ import { ordersRepo } from '../db/orders.repo.js';
 import { categoriesRepo } from '../db/categories.repo.js';
 import { brandsRepo } from '../db/brands.repo.js';
 import { usersRepo } from '../db/users.repo.js';
+import { reviewsRepo } from '../db/reviews.repo.js';
 import { sendOrderStatusEmails } from './email.service.js';
 import { ApiError } from '../utils/apiError.js';
 
@@ -16,15 +17,28 @@ import { ApiError } from '../utils/apiError.js';
 // tool loop, trimmed history, compact tool payloads, low temperature.
 // ---------------------------------------------------------------------------
 
-const MAX_TOOL_ROUNDS = 6; // hard cap on tool-call iterations per request
-const MAX_HISTORY = 12; // only keep the most recent turns sent from the client
+const MAX_TOOL_ROUNDS = 10; // hard cap on tool-call iterations per request
+const MAX_HISTORY = 14; // only keep the most recent turns sent from the client
 const ORDER_STATUSES = ['pending', 'confirmed', 'shipped', 'delivered', 'cancelled'];
 
 // Trim a product to the few fields that matter to an admin, keeping tokens low.
+const compactVariant = (v) =>
+  v && {
+    variantId: v._id,
+    capacity: v.capacity,
+    model: v.model,
+    price: v.price,
+    priceOld: v.priceOld,
+    stock: v.stock,
+    sku: v.sku,
+  };
+
 const compactProduct = (p) =>
   p && {
     id: p._id,
     name: p.name?.fr ?? p.name,
+    nameAr: p.name?.ar,
+    descriptionFr: p.description?.fr,
     price: p.price,
     priceOld: p.priceOld,
     stock: p.stock,
@@ -33,7 +47,10 @@ const compactProduct = (p) =>
     isFeatured: p.isFeatured,
     isPromo: p.isPromo,
     tags: p.tags,
+    images: p.images,
+    specs: p.specs,
     slug: p.slug,
+    variants: (p.variants ?? []).map(compactVariant),
   };
 
 const compactOrder = (o) =>
@@ -51,6 +68,47 @@ const compactOrder = (o) =>
 
 const compactUser = (u) =>
   u && { id: u._id, name: u.name, email: u.email, phone: u.phone, role: u.role };
+
+// Keep only defined variant fields; coerce numbers. Preserves _id when present.
+function cleanVariant(v = {}) {
+  const out = {};
+  if (v._id) out._id = v._id;
+  if (v.capacity != null) out.capacity = String(v.capacity);
+  if (v.model != null && v.model !== '') out.model = String(v.model);
+  if (v.price != null) out.price = Number(v.price);
+  if (v.priceOld != null) out.priceOld = Number(v.priceOld);
+  if (v.stock != null) out.stock = Number(v.stock);
+  if (v.sku != null && v.sku !== '') out.sku = String(v.sku);
+  return out;
+}
+
+function normalizeVariants(arr) {
+  if (!Array.isArray(arr)) return [];
+  return arr.map(cleanVariant).filter((v) => v.capacity && v.price != null);
+}
+
+// Mirror the REST controller: derive base price/stock from variants when set.
+function deriveFromVariants(payload) {
+  if (Array.isArray(payload.variants) && payload.variants.length > 0) {
+    const prices = payload.variants.map((v) => v.price).filter((n) => n != null);
+    if (prices.length && payload.price == null) payload.price = Math.min(...prices);
+    if (payload.stock == null) {
+      payload.stock = payload.variants.reduce((s, v) => s + (v.stock ?? 0), 0);
+    }
+  }
+  return payload;
+}
+
+// fetch() with an abort timeout so web tools never hang the request.
+async function fetchWithTimeout(url, options = {}, ms = 9000) {
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), ms);
+  try {
+    return await fetch(url, { ...options, signal: controller.signal });
+  } finally {
+    clearTimeout(timer);
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Tool implementations — each returns a plain JS object/array (serialized to
@@ -90,12 +148,14 @@ const TOOL_IMPL = {
   async create_product(args = {}) {
     const { nameFr, nameAr, descriptionFr, descriptionAr, ...rest } = args;
     if (!nameFr) return { error: 'nameFr (French product name) is required' };
-    if (rest.price == null) return { error: 'price is required' };
+    const variants = normalizeVariants(rest.variants);
+    if (rest.price == null && variants.length === 0)
+      return { error: 'Provide a base price or at least one variant' };
     const payload = {
       name: { fr: nameFr, ar: nameAr ?? nameFr },
       description: { fr: descriptionFr ?? '', ar: descriptionAr ?? '' },
-      price: Number(rest.price),
-      stock: rest.stock != null ? Number(rest.stock) : 0,
+      price: rest.price != null ? Number(rest.price) : undefined,
+      stock: rest.stock != null ? Number(rest.stock) : undefined,
       brand: rest.brand,
       category: rest.category,
       tags: rest.tags,
@@ -104,7 +164,10 @@ const TOOL_IMPL = {
       isPromo: rest.isPromo,
       priceOld: rest.priceOld != null ? Number(rest.priceOld) : undefined,
       images: rest.images,
+      specs: rest.specs,
+      variants: variants.length ? variants : undefined,
     };
+    deriveFromVariants(payload);
     const created = await productsRepo.create(payload);
     return { ok: true, product: compactProduct(created) };
   },
@@ -119,6 +182,19 @@ const TOOL_IMPL = {
         ar: fields.nameAr ?? current?.name?.ar,
       };
     }
+    if (fields.descriptionFr != null || fields.descriptionAr != null) {
+      const current = await productsRepo.byId(id);
+      payload.description = {
+        fr: fields.descriptionFr ?? current?.description?.fr ?? '',
+        ar: fields.descriptionAr ?? current?.description?.ar ?? '',
+      };
+    }
+    if (fields.specs !== undefined) payload.specs = fields.specs;
+    if (fields.images !== undefined) payload.images = fields.images;
+    if (fields.variants !== undefined) {
+      payload.variants = normalizeVariants(fields.variants);
+      deriveFromVariants(payload);
+    }
     for (const [k, v] of Object.entries({
       price: fields.price != null ? Number(fields.price) : undefined,
       priceOld: fields.priceOld != null ? Number(fields.priceOld) : undefined,
@@ -129,11 +205,74 @@ const TOOL_IMPL = {
       isFeatured: fields.isFeatured,
       isPromo: fields.isPromo,
       deliveryFee: fields.deliveryFee != null ? Number(fields.deliveryFee) : undefined,
+      slug: fields.slug,
     })) {
       if (v !== undefined) payload[k] = v;
     }
     const updated = await productsRepo.updateById(id, payload);
     if (!updated) return { error: 'Product not found' };
+    return { ok: true, product: compactProduct(updated) };
+  },
+
+  // ---- Variants -----------------------------------------------------------
+  async list_variants({ productId } = {}) {
+    if (!productId) return { error: 'productId is required' };
+    const p = await productsRepo.byId(productId);
+    if (!p) return { error: 'Product not found' };
+    return (p.variants ?? []).map(compactVariant);
+  },
+
+  async add_variant({ productId, capacity, model, price, priceOld, stock, sku } = {}) {
+    if (!productId) return { error: 'productId is required' };
+    if (!capacity) return { error: 'capacity is required' };
+    if (price == null) return { error: 'price is required' };
+    const p = await productsRepo.byId(productId);
+    if (!p) return { error: 'Product not found' };
+    const variants = [
+      ...(p.variants ?? []),
+      cleanVariant({ capacity, model, price, priceOld, stock, sku }),
+    ];
+    const payload = { variants };
+    deriveFromVariants(payload);
+    const updated = await productsRepo.updateById(productId, payload);
+    return { ok: true, product: compactProduct(updated) };
+  },
+
+  async update_variant({ productId, variantId, ...fields } = {}) {
+    if (!productId || !variantId) return { error: 'productId and variantId are required' };
+    const p = await productsRepo.byId(productId);
+    if (!p) return { error: 'Product not found' };
+    let found = false;
+    const variants = (p.variants ?? []).map((v) => {
+      if (String(v._id) !== String(variantId)) return v;
+      found = true;
+      return cleanVariant({
+        capacity: fields.capacity ?? v.capacity,
+        model: fields.model ?? v.model,
+        price: fields.price != null ? Number(fields.price) : v.price,
+        priceOld: fields.priceOld != null ? Number(fields.priceOld) : v.priceOld,
+        stock: fields.stock != null ? Number(fields.stock) : v.stock,
+        sku: fields.sku ?? v.sku,
+        _id: v._id,
+      });
+    });
+    if (!found) return { error: 'Variant not found on this product' };
+    const payload = { variants };
+    deriveFromVariants(payload);
+    const updated = await productsRepo.updateById(productId, payload);
+    return { ok: true, product: compactProduct(updated) };
+  },
+
+  async delete_variant({ productId, variantId } = {}) {
+    if (!productId || !variantId) return { error: 'productId and variantId are required' };
+    const p = await productsRepo.byId(productId);
+    if (!p) return { error: 'Product not found' };
+    const variants = (p.variants ?? []).filter((v) => String(v._id) !== String(variantId));
+    if (variants.length === (p.variants ?? []).length)
+      return { error: 'Variant not found on this product' };
+    const payload = { variants };
+    deriveFromVariants(payload);
+    const updated = await productsRepo.updateById(productId, payload);
     return { ok: true, product: compactProduct(updated) };
   },
 
@@ -253,6 +392,94 @@ const TOOL_IMPL = {
     if (!updated) return { error: 'User not found' };
     return { ok: true, user: compactUser(updated) };
   },
+
+  // ---- Reviews ------------------------------------------------------------
+  async list_reviews({ productId } = {}) {
+    if (!productId) return { error: 'productId is required' };
+    const items = await reviewsRepo.listByProduct(productId);
+    return items.map((r) => ({
+      id: r._id,
+      rating: r.rating,
+      comment: r.comment,
+      user: r.user?.name ?? r.user,
+      createdAt: r.createdAt,
+    }));
+  },
+
+  async delete_review({ id } = {}) {
+    if (!id) return { error: 'id is required' };
+    await reviewsRepo.deleteById(id);
+    return { ok: true };
+  },
+
+  // ---- Web --------------------------------------------------------------
+  async web_search({ query, max = 5 } = {}) {
+    if (!query) return { error: 'query is required' };
+    const limit = Math.min(Number(max) || 5, 8);
+
+    // Preferred: Tavily (built for agents) when an API key is configured.
+    if (env.ai.tavilyApiKey) {
+      try {
+        const r = await fetchWithTimeout('https://api.tavily.com/search', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            api_key: env.ai.tavilyApiKey,
+            query,
+            max_results: limit,
+            include_answer: true,
+          }),
+        });
+        const data = await r.json();
+        return {
+          answer: data.answer,
+          results: (data.results ?? []).map((x) => ({
+            title: x.title,
+            url: x.url,
+            snippet: (x.content ?? '').slice(0, 300),
+          })),
+        };
+      } catch (e) {
+        return { error: `web_search failed: ${e.message}` };
+      }
+    }
+
+    // Keyless fallback: DuckDuckGo Instant Answer API.
+    try {
+      const u = `https://api.duckduckgo.com/?q=${encodeURIComponent(query)}&format=json&no_html=1&skip_disambig=1`;
+      const r = await fetchWithTimeout(u);
+      const data = await r.json();
+      const results = [];
+      if (data.AbstractText)
+        results.push({ title: data.Heading, url: data.AbstractURL, snippet: data.AbstractText });
+      for (const t of data.RelatedTopics ?? []) {
+        if (t.Text && t.FirstURL) results.push({ title: t.Text.slice(0, 80), url: t.FirstURL, snippet: t.Text });
+        if (results.length >= limit) break;
+      }
+      return results.length
+        ? { results, note: 'Set TAVILY_API_KEY for richer web search.' }
+        : { results: [], note: 'No instant answer. Configure TAVILY_API_KEY for full web search.' };
+    } catch (e) {
+      return { error: `web_search failed: ${e.message}` };
+    }
+  },
+
+  async fetch_url({ url } = {}) {
+    if (!url || !/^https?:\/\//i.test(url)) return { error: 'A valid http(s) url is required' };
+    try {
+      const r = await fetchWithTimeout(url, { headers: { 'User-Agent': 'CoolZoneBot/1.0' } });
+      const html = await r.text();
+      const text = html
+        .replace(/<script[\s\S]*?<\/script>/gi, ' ')
+        .replace(/<style[\s\S]*?<\/style>/gi, ' ')
+        .replace(/<[^>]+>/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim();
+      return { url, status: r.status, text: text.slice(0, 4000) };
+    } catch (e) {
+      return { error: `fetch_url failed: ${e.message}` };
+    }
+  },
 };
 
 // Mutating tools — used to flag actions in the response so the UI can refresh.
@@ -260,6 +487,9 @@ const MUTATING_TOOLS = new Set([
   'create_product',
   'update_product',
   'delete_product',
+  'add_variant',
+  'update_variant',
+  'delete_variant',
   'update_order_status',
   'create_category',
   'update_category',
@@ -268,6 +498,7 @@ const MUTATING_TOOLS = new Set([
   'update_brand',
   'delete_brand',
   'set_user_role',
+  'delete_review',
 ]);
 
 // ---------------------------------------------------------------------------
@@ -277,6 +508,34 @@ const MUTATING_TOOLS = new Set([
 const str = (description) => ({ type: 'string', description });
 const numType = (description) => ({ type: 'number', description });
 const bool = (description) => ({ type: 'boolean', description });
+
+const SPECS_SCHEMA = {
+  type: 'object',
+  description: 'Technical specs',
+  properties: {
+    capacity: { type: 'string' },
+    energyClass: { type: 'string' },
+    coverage: { type: 'string' },
+    inverter: { type: 'boolean' },
+    wifi: { type: 'boolean' },
+    heating: { type: 'boolean' },
+    noise: { type: 'string' },
+    warranty: { type: 'string' },
+  },
+};
+
+const VARIANT_SCHEMA = {
+  type: 'object',
+  properties: {
+    capacity: { type: 'string', description: 'e.g. "12000 BTU"' },
+    model: { type: 'string', description: 'e.g. "Inverter"' },
+    price: { type: 'number' },
+    priceOld: { type: 'number' },
+    stock: { type: 'number' },
+    sku: { type: 'string' },
+  },
+  required: ['capacity', 'price'],
+};
 
 const TOOLS = [
   fn('dashboard_stats', 'Get store totals (users, products, orders, brands, categories) and revenue.'),
@@ -308,28 +567,71 @@ const TOOLS = [
       deliveryFee: numType('Delivery fee in MAD'),
       isFeatured: bool('Show on homepage'),
       isPromo: bool('Mark as promo'),
+      images: { type: 'array', items: { type: 'string' }, description: 'Image URLs' },
+      specs: SPECS_SCHEMA,
+      variants: { type: 'array', items: VARIANT_SCHEMA, description: 'Product variants (capacity/price/stock)' },
     },
-    ['nameFr', 'price']
+    ['nameFr']
   ),
   fn(
     'update_product',
-    'Update fields of an existing product. Only provided fields change.',
+    'Update fields of an existing product. Only provided fields change. Can edit name, description, price, stock, images, specs, tags, flags, and replace the whole variants array.',
     {
       id: str('Product id (required)'),
       nameFr: str('New French name'),
       nameAr: str('New Arabic name'),
+      descriptionFr: str('New French description'),
+      descriptionAr: str('New Arabic description'),
       price: numType('New price'),
       priceOld: numType('New old price'),
       stock: numType('New stock'),
       brand: str('New brand'),
       category: str('New category id'),
       tags: { type: 'array', items: { type: 'string' } },
+      images: { type: 'array', items: { type: 'string' }, description: 'Replace image URLs' },
+      specs: SPECS_SCHEMA,
+      variants: { type: 'array', items: VARIANT_SCHEMA, description: 'Replace the entire variants array' },
       isFeatured: bool('Featured flag'),
       isPromo: bool('Promo flag'),
       deliveryFee: numType('Delivery fee'),
+      slug: str('URL slug'),
     },
     ['id']
   ),
+  fn('list_variants', 'List the variants of a product with their variantIds.', { productId: str('Product id') }, ['productId']),
+  fn(
+    'add_variant',
+    'Add a variant to a product.',
+    {
+      productId: str('Product id'),
+      capacity: str('Capacity, e.g. "12000 BTU" (required)'),
+      model: str('Model label, e.g. "Inverter"'),
+      price: numType('Variant price in MAD (required)'),
+      priceOld: numType('Old price'),
+      stock: numType('Variant stock'),
+      sku: str('SKU code'),
+    },
+    ['productId', 'capacity', 'price']
+  ),
+  fn(
+    'update_variant',
+    'Update one variant of a product by variantId. Only provided fields change.',
+    {
+      productId: str('Product id'),
+      variantId: str('Variant id (from list_variants)'),
+      capacity: str('Capacity'),
+      model: str('Model label'),
+      price: numType('Price'),
+      priceOld: numType('Old price'),
+      stock: numType('Stock'),
+      sku: str('SKU'),
+    },
+    ['productId', 'variantId']
+  ),
+  fn('delete_variant', 'Remove a variant from a product.', {
+    productId: str('Product id'),
+    variantId: str('Variant id'),
+  }, ['productId', 'variantId']),
   fn('delete_product', 'Permanently delete a product. Confirm with the user first.', { id: str('Product id') }, ['id']),
   fn('list_orders', 'List orders, optionally filtered by status.', {
     status: { type: 'string', enum: ORDER_STATUSES, description: 'Filter by status' },
@@ -382,6 +684,20 @@ const TOOLS = [
     id: str('User id'),
     role: { type: 'string', enum: ['user', 'admin'] },
   }, ['id', 'role']),
+  fn('list_reviews', 'List customer reviews for a product.', { productId: str('Product id') }, ['productId']),
+  fn('delete_review', 'Delete a customer review by id (e.g. spam/abuse). Confirm first.', { id: str('Review id') }, ['id']),
+  fn(
+    'web_search',
+    'Search the public web for up-to-date information (competitor prices, specs, market data, news). Returns titles, URLs and snippets.',
+    { query: str('Search query'), max: numType('Max results, default 5') },
+    ['query']
+  ),
+  fn(
+    'fetch_url',
+    'Fetch a web page and return its readable text content. Use after web_search to read a specific result.',
+    { url: str('Full http(s) URL') },
+    ['url']
+  ),
 ];
 
 function fn(name, description, properties = {}, required = []) {
@@ -397,13 +713,15 @@ function fn(name, description, properties = {}, required = []) {
 
 const SYSTEM_PROMPT = `You are CoolZone Copilot, the AI operations assistant embedded in the admin panel of CoolZone — a bilingual (French/Arabic) air-conditioning e-commerce store in Morocco. Prices are in MAD.
 
-You act on behalf of a store administrator. Use the provided tools to read and modify real store data (products, orders, categories, brands, users). 
+You act on behalf of a store administrator with full control over the store. Use the provided tools to read and modify ANY store data: products (including their variants, images, specs, descriptions, prices, stock, tags, featured/promo flags), orders and their status, categories, brands, users and roles, and customer reviews. You can also search the web and read web pages to inform your decisions (e.g. competitor pricing, product specs, market research).
 
 Guidelines:
 - Be concise and professional. Reply in the same language the admin uses (French, Arabic, or English).
-- When asked to do something, use tools to actually do it — do not just describe steps.
+- Be proactive and agentic: when asked to do something, chain multiple tools to fully complete it — look up ids, make the changes, then verify. Do not just describe steps.
+- To edit a product variant, first call list_variants to get the variantId, then add_variant / update_variant / delete_variant.
 - Look up ids with list_* tools before updating or deleting by id. Never invent ids.
-- Before any destructive action (deleting a product, category, or brand), confirm with the admin unless they already clearly approved it.
+- Use web_search (and fetch_url to read a page) when the admin asks about current prices, specs, trends, or anything not in the store database.
+- Before any destructive action (deleting a product, variant, category, brand, or review), confirm with the admin unless they already clearly approved it.
 - When you change data, briefly summarize what changed (names and key values), not raw ids.
 - If a tool returns an error, explain it plainly and suggest a fix.
 - Money is in MAD. Keep answers short and skimmable.`;

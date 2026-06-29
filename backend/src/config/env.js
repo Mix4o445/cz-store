@@ -34,6 +34,7 @@ export const env = {
     nvidiaApiKey: process.env.NVIDIA_API_KEY || '',
     baseUrl: process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1',
     model: process.env.NVIDIA_MODEL || 'meta/llama-3.3-70b-instruct',
+    tavilyApiKey: process.env.TAVILY_API_KEY || '',
   },
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',

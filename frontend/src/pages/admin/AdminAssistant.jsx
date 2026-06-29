@@ -15,6 +15,9 @@ const ACTION_LABELS = {
   create_product: 'Produit créé',
   update_product: 'Produit modifié',
   delete_product: 'Produit supprimé',
+  add_variant: 'Variante ajoutée',
+  update_variant: 'Variante modifiée',
+  delete_variant: 'Variante supprimée',
   update_order_status: 'Statut de commande mis à jour',
   create_category: 'Catégorie créée',
   update_category: 'Catégorie modifiée',
@@ -23,6 +26,7 @@ const ACTION_LABELS = {
   update_brand: 'Marque modifiée',
   delete_brand: 'Marque supprimée',
   set_user_role: 'Rôle utilisateur modifié',
+  delete_review: 'Avis supprimé',
 };
 
 export default function AdminAssistant() {
