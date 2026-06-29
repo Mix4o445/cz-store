@@ -72,7 +72,7 @@ export function mapProduct(row) {
     isFeatured: !!row.is_featured,
     tags: Array.isArray(row.tags) ? row.tags : row.tags ? [row.tags] : [],
     deliveryFee: num(row.delivery_fee) ?? 0,
-    variants: row.variants ?? [],
+    variants: Array.isArray(row.variants) ? row.variants : [],
     slug: row.slug,
     ...ts(row),
   };
