@@ -28,6 +28,7 @@ import AdminCategories from './pages/admin/AdminCategories';
 import AdminOrders from './pages/admin/AdminOrders';
 import AdminOrderDetail from './pages/admin/AdminOrderDetail';
 import AdminUsers from './pages/admin/AdminUsers';
+import AdminAssistant from './pages/admin/AdminAssistant';
 
 import RequireAuth from './components/common/RequireAuth';
 import OrderConfirmPage from './pages/OrderConfirmPage';
@@ -68,6 +69,7 @@ export default function App() {
           <Route path="orders" element={<AdminOrders />} />
           <Route path="orders/:id" element={<AdminOrderDetail />} />
           <Route path="users" element={<AdminUsers />} />
+          <Route path="assistant" element={<AdminAssistant />} />
         </Route>
 
         <Route path="*" element={<NotFoundPage />} />

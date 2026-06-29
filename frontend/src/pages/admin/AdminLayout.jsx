@@ -7,6 +7,7 @@ import {
   Layers3,
   ShoppingCart,
   Users,
+  Sparkles,
   ArrowLeft,
 } from 'lucide-react';
 import clsx from 'clsx';
@@ -19,6 +20,7 @@ const NAV = [
   { to: 'brands', icon: TagsIcon, key: 'brands' },
   { to: 'orders', icon: ShoppingCart, key: 'orders' },
   { to: 'users', icon: Users, key: 'users' },
+  { to: 'assistant', icon: Sparkles, key: 'assistant' },
 ];
 
 export default function AdminLayout() {

@@ -30,6 +30,11 @@ export const env = {
     from: process.env.SMTP_FROM || 'CoolZone <noreply@coolzone.ma>',
   },
   adminEmail: process.env.ADMIN_EMAIL || '',
+  ai: {
+    nvidiaApiKey: process.env.NVIDIA_API_KEY || '',
+    baseUrl: process.env.NVIDIA_BASE_URL || 'https://integrate.api.nvidia.com/v1',
+    model: process.env.NVIDIA_MODEL || 'meta/llama-3.3-70b-instruct',
+  },
   cloudinary: {
     cloudName: process.env.CLOUDINARY_CLOUD_NAME || '',
     apiKey: process.env.CLOUDINARY_API_KEY || '',

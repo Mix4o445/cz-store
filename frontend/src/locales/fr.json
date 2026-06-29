@@ -367,6 +367,7 @@
   },
   "admin": {
     "title": "Administration",
+    "assistant": "Assistant IA",
     "nav": {
       "dashboard": "Tableau de bord",
       "products": "Produits",
@@ -374,6 +375,7 @@
       "brands": "Marques",
       "orders": "Commandes",
       "users": "Utilisateurs",
+      "assistant": "Assistant IA",
       "back": "Retour au site"
     },
     "dashboard": {
