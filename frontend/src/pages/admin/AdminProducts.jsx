@@ -92,7 +92,7 @@ export default function AdminProducts() {
                         {p.stock ?? 0}
                       </td>
                       <td className="py-3 pe-3">
-                        {p.tags?.length ? (
+                        {Array.isArray(p.tags) && p.tags.length ? (
                           <div className="flex flex-wrap gap-1">
                             {p.tags.slice(0, 3).map((tag) => (
                               <span key={tag} className="text-[10px] px-1.5 py-0.5 bg-ink/5 rounded">

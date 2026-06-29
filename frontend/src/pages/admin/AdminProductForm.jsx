@@ -73,7 +73,7 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
       name: { fr: initial.name?.fr ?? '' },
       description: { fr: initial.description?.fr ?? '' },
       priceOld: initial.priceOld ?? '',
-      tags: initial.tags ?? [],
+      tags: Array.isArray(initial.tags) ? initial.tags : [],
       images: initial.images ?? [],
       deliveryFee: initial.deliveryFee ?? 0,
       variants: (initial.variants ?? []).map((v) => ({

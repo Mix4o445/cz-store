@@ -104,6 +104,13 @@ function cleanSpecs(specs) {
   return out;
 }
 
+// Coerce tags into a clean string array (model may send a CSV string).
+function toTags(v) {
+  if (v == null) return undefined;
+  const arr = Array.isArray(v) ? v : String(v).split(',');
+  return arr.map((t) => String(t).trim().toLowerCase()).filter(Boolean);
+}
+
 // Mirror the REST controller: derive base price/stock from variants when set.
 function deriveFromVariants(payload) {
   if (Array.isArray(payload.variants) && payload.variants.length > 0) {
@@ -175,7 +182,7 @@ const TOOL_IMPL = {
       stock: rest.stock != null ? Number(rest.stock) : undefined,
       brand: rest.brand,
       category: rest.category,
-      tags: rest.tags,
+      tags: toTags(rest.tags),
       deliveryFee: rest.deliveryFee != null ? Number(rest.deliveryFee) : undefined,
       isFeatured: rest.isFeatured != null ? toBool(rest.isFeatured) : undefined,
       isPromo: rest.isPromo != null ? toBool(rest.isPromo) : undefined,
@@ -218,7 +225,7 @@ const TOOL_IMPL = {
       stock: fields.stock != null ? Number(fields.stock) : undefined,
       brand: fields.brand,
       category: fields.category,
-      tags: fields.tags,
+      tags: fields.tags !== undefined ? toTags(fields.tags) : undefined,
       isFeatured: fields.isFeatured != null ? toBool(fields.isFeatured) : undefined,
       isPromo: fields.isPromo != null ? toBool(fields.isPromo) : undefined,
       deliveryFee: fields.deliveryFee != null ? Number(fields.deliveryFee) : undefined,
