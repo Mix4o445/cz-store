@@ -47,6 +47,10 @@ function Field({ label, hint, children }) {
 const inputCls =
   'w-full bg-transparent border-b border-ink/20 px-0 py-2.5 outline-none focus:border-ink';
 
+// Coerce loose values (incl. strings "true"/"false") to a real boolean so the
+// checkbox `checked` prop is always boolean.
+const asBool = (v) => v === true || v === 'true';
+
 export default function AdminProductForm({ initial, onCancel, onSaved }) {
   const { t } = useTranslation();
   const isEdit = !!initial?._id;
@@ -116,6 +120,14 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
     e.preventDefault();
     const payload = {
       ...form,
+      isPromo: asBool(form.isPromo),
+      isFeatured: asBool(form.isFeatured),
+      specs: {
+        ...form.specs,
+        inverter: asBool(form.specs?.inverter),
+        wifi: asBool(form.specs?.wifi),
+        heating: asBool(form.specs?.heating),
+      },
       stock: form.stock === '' || form.stock == null ? undefined : Number(form.stock),
       deliveryFee:
         form.deliveryFee === '' || form.deliveryFee == null ? 0 : Number(form.deliveryFee),
@@ -283,7 +295,7 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
           <label className="inline-flex items-center gap-2 text-sm">
             <input
               type="checkbox"
-              checked={form.isPromo}
+              checked={asBool(form.isPromo)}
               onChange={(e) => setField('isPromo', e.target.checked)}
               className="accent-ink w-4 h-4"
             />
@@ -292,7 +304,7 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
           <label className="inline-flex items-center gap-2 text-sm">
             <input
               type="checkbox"
-              checked={form.isFeatured}
+              checked={asBool(form.isFeatured)}
               onChange={(e) => setField('isFeatured', e.target.checked)}
               className="accent-ink w-4 h-4"
             />
@@ -492,15 +504,15 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
           </Field>
           <div className="flex flex-wrap items-end gap-6 pb-2">
             <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.specs.inverter} onChange={(e) => setField('specs.inverter', e.target.checked)} className="accent-ink w-4 h-4" />
+              <input type="checkbox" checked={asBool(form.specs.inverter)} onChange={(e) => setField('specs.inverter', e.target.checked)} className="accent-ink w-4 h-4" />
               {t('admin.products.specs_inverter')}
             </label>
             <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.specs.wifi} onChange={(e) => setField('specs.wifi', e.target.checked)} className="accent-ink w-4 h-4" />
+              <input type="checkbox" checked={asBool(form.specs.wifi)} onChange={(e) => setField('specs.wifi', e.target.checked)} className="accent-ink w-4 h-4" />
               {t('admin.products.specs_wifi')}
             </label>
             <label className="inline-flex items-center gap-2 text-sm">
-              <input type="checkbox" checked={form.specs.heating} onChange={(e) => setField('specs.heating', e.target.checked)} className="accent-ink w-4 h-4" />
+              <input type="checkbox" checked={asBool(form.specs.heating)} onChange={(e) => setField('specs.heating', e.target.checked)} className="accent-ink w-4 h-4" />
               {t('admin.products.specs_heating')}
             </label>
           </div>

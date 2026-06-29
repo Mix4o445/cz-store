@@ -87,6 +87,23 @@ function normalizeVariants(arr) {
   return arr.map(cleanVariant).filter((v) => v.capacity && v.price != null);
 }
 
+// Coerce loose truthy/falsey values (incl. the strings "true"/"false") to bool.
+function toBool(v) {
+  if (typeof v === 'boolean') return v;
+  if (typeof v === 'string') return v.trim().toLowerCase() === 'true';
+  return !!v;
+}
+
+// Ensure spec boolean fields are real booleans (the model sometimes emits strings).
+function cleanSpecs(specs) {
+  if (!specs || typeof specs !== 'object') return specs;
+  const out = { ...specs };
+  for (const k of ['inverter', 'wifi', 'heating']) {
+    if (out[k] !== undefined) out[k] = toBool(out[k]);
+  }
+  return out;
+}
+
 // Mirror the REST controller: derive base price/stock from variants when set.
 function deriveFromVariants(payload) {
   if (Array.isArray(payload.variants) && payload.variants.length > 0) {
@@ -160,11 +177,11 @@ const TOOL_IMPL = {
       category: rest.category,
       tags: rest.tags,
       deliveryFee: rest.deliveryFee != null ? Number(rest.deliveryFee) : undefined,
-      isFeatured: rest.isFeatured,
-      isPromo: rest.isPromo,
+      isFeatured: rest.isFeatured != null ? toBool(rest.isFeatured) : undefined,
+      isPromo: rest.isPromo != null ? toBool(rest.isPromo) : undefined,
       priceOld: rest.priceOld != null ? Number(rest.priceOld) : undefined,
       images: rest.images,
-      specs: rest.specs,
+      specs: cleanSpecs(rest.specs),
       variants: variants.length ? variants : undefined,
     };
     deriveFromVariants(payload);
@@ -189,7 +206,7 @@ const TOOL_IMPL = {
         ar: fields.descriptionAr ?? current?.description?.ar ?? '',
       };
     }
-    if (fields.specs !== undefined) payload.specs = fields.specs;
+    if (fields.specs !== undefined) payload.specs = cleanSpecs(fields.specs);
     if (fields.images !== undefined) payload.images = fields.images;
     if (fields.variants !== undefined) {
       payload.variants = normalizeVariants(fields.variants);
@@ -202,8 +219,8 @@ const TOOL_IMPL = {
       brand: fields.brand,
       category: fields.category,
       tags: fields.tags,
-      isFeatured: fields.isFeatured,
-      isPromo: fields.isPromo,
+      isFeatured: fields.isFeatured != null ? toBool(fields.isFeatured) : undefined,
+      isPromo: fields.isPromo != null ? toBool(fields.isPromo) : undefined,
       deliveryFee: fields.deliveryFee != null ? Number(fields.deliveryFee) : undefined,
       slug: fields.slug,
     })) {

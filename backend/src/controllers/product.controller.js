@@ -5,14 +5,19 @@ import { ok, created } from '../utils/apiResponse.js';
 import { badRequest, notFound } from '../utils/apiError.js';
 import { isUuid } from '../utils/ids.js';
 
+const boolish = z.preprocess(
+  (v) => (typeof v === 'string' ? v.trim().toLowerCase() === 'true' : v),
+  z.boolean()
+);
+
 const specsSchema = z
   .object({
     capacity: z.string().optional().or(z.literal('')),
     energyClass: z.string().optional().or(z.literal('')),
     coverage: z.string().optional().or(z.literal('')),
-    inverter: z.boolean().optional(),
-    wifi: z.boolean().optional(),
-    heating: z.boolean().optional(),
+    inverter: boolish.optional(),
+    wifi: boolish.optional(),
+    heating: boolish.optional(),
     noise: z.string().optional().or(z.literal('')),
     warranty: z.string().optional().or(z.literal('')),
   })
