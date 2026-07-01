@@ -1,4 +1,5 @@
-import { Routes, Route } from 'react-router-dom';
+import { Routes, Route, useLocation } from 'react-router-dom';
+import { useEffect } from 'react';
 import Layout from './components/layout/Layout';
 import HomePage from './pages/HomePage';
 import ShopPage from './pages/ShopPage';
@@ -12,6 +13,7 @@ import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
 import BrandsPage from './pages/BrandsPage';
 import NotFoundPage from './pages/NotFoundPage';
+import MaintenancePage from './pages/MaintenancePage';
 
 import AccountLayout from './pages/account/AccountLayout';
 import AccountOverview from './pages/account/AccountOverview';
@@ -30,14 +32,18 @@ import AdminOrders from './pages/admin/AdminOrders';
 import AdminOrderDetail from './pages/admin/AdminOrderDetail';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminAssistant from './pages/admin/AdminAssistant';
+import AdminSettings from './pages/admin/AdminSettings';
 
 import RequireAuth from './components/common/RequireAuth';
 import OrderConfirmPage from './pages/OrderConfirmPage';
+import { useMaintenance } from './hooks/useSettings';
+import { useAuthStore } from './store/authStore';
+import SEO from './components/common/SEO';
 
-export default function App() {
+function Storefront() {
   return (
-    <Routes>
-      <Route element={<Layout />}>
+    <Layout>
+      <Routes>
         <Route index element={<HomePage />} />
         <Route path="shop" element={<ShopPage />} />
         <Route path="product/:slug" element={<ProductPage />} />
@@ -63,19 +69,74 @@ export default function App() {
           <Route path="preferences" element={<AccountPreferences />} />
         </Route>
 
-        <Route path="admin" element={<AdminLayout />}>
-          <Route index element={<AdminDashboard />} />
-          <Route path="products" element={<AdminProducts />} />
-          <Route path="brands" element={<AdminBrands />} />
-          <Route path="categories" element={<AdminCategories />} />
-          <Route path="orders" element={<AdminOrders />} />
-          <Route path="orders/:id" element={<AdminOrderDetail />} />
-          <Route path="users" element={<AdminUsers />} />
-          <Route path="assistant" element={<AdminAssistant />} />
-        </Route>
-
         <Route path="*" element={<NotFoundPage />} />
+      </Routes>
+    </Layout>
+  );
+}
+
+function AdminApp() {
+  return (
+    <Routes>
+      <Route path="admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="brands" element={<AdminBrands />} />
+        <Route path="categories" element={<AdminCategories />} />
+        <Route path="orders" element={<AdminOrders />} />
+        <Route path="orders/:id" element={<AdminOrderDetail />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="assistant" element={<AdminAssistant />} />
+        <Route path="settings" element={<AdminSettings />} />
       </Route>
+    </Routes>
+  );
+}
+
+export default function App() {
+  const location = useLocation();
+  const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
+  const { data: settings } = useMaintenance();
+
+  // When maintenance is on, hide the storefront from non-admins. Admins
+  // keep full access at /admin/* so they can disable the flag. The
+  // /admin/* routes are mounted at the top level (outside <Layout>) and
+  // never get intercepted by the maintenance page.
+  const inAdmin = location.pathname.startsWith('/admin');
+  const showMaintenance =
+    !!settings?.maintenanceMode && !isAdmin && !inAdmin;
+
+  // When the storefront is gated, make sure search engines don't index
+  // the maintenance page. The <SEO> component inside MaintenancePage also
+  // sets noindex, but doing it here avoids a flash.
+  useEffect(() => {
+    if (showMaintenance) {
+      const meta = document.createElement('meta');
+      meta.name = 'robots';
+      meta.content = 'noindex, nofollow';
+      meta.dataset.maintenance = 'true';
+      document.head.appendChild(meta);
+    } else {
+      document.querySelector('meta[data-maintenance="true"]')?.remove();
+    }
+    return () => {
+      document.querySelector('meta[data-maintenance="true"]')?.remove();
+    };
+  }, [showMaintenance]);
+
+  if (showMaintenance) {
+    return (
+      <>
+        <SEO title="Maintenance en cours" path="/maintenance" noindex />
+        <MaintenancePage />
+      </>
+    );
+  }
+
+  return (
+    <Routes>
+      <Route path="admin/*" element={<AdminApp />} />
+      <Route path="/*" element={<Storefront />} />
     </Routes>
   );
 }

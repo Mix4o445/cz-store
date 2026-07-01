@@ -103,6 +103,14 @@
     "delivery_hint": "Livraison sous 24-72h",
     "warranty_hint": "Garantie 1 an sur les climatiseurs"
   },
+  "maintenance": {
+    "eyebrow": "CoolZone",
+    "title": "On revient dans quelques instants.",
+    "default_message": "Nous effectuons une maintenance pour améliorer votre expérience. Merci de votre patience, le site sera de retour très bientôt.",
+    "retry": "Réessayer",
+    "offline_hint": "Si le problème persiste, contactez-nous.",
+    "admin_link": "Admin"
+  },
   "cart": {
     "title": "Panier",
     "added": "Ajouté au panier",
@@ -390,6 +398,7 @@
       "orders": "Commandes",
       "users": "Utilisateurs",
       "assistant": "Assistant IA",
+      "settings": "Paramètres",
       "back": "Retour au site"
     },
     "dashboard": {
@@ -504,6 +513,22 @@
       "status": "Statut",
       "date": "Date",
       "empty": "Aucune commande."
+    },
+    "settings": {
+      "eyebrow": "Paramètres",
+      "title": "Mode maintenance",
+      "sub": "Activez le mode maintenance pour afficher une page d'attente aux visiteurs pendant que vous effectuez des changements. Les administrateurs gardent toujours l'accès.",
+      "mode_title": "Maintenance du site",
+      "mode_on_hint": "La boutique est actuellement fermée. Les visiteurs voient la page de maintenance.",
+      "mode_off_hint": "La boutique est en ligne. Les visiteurs voient le site normalement.",
+      "message_label": "Message affiché aux visiteurs",
+      "message_placeholder": "Nous effectuons une maintenance pour améliorer votre expérience. Merci de votre patience.",
+      "save": "Enregistrer",
+      "saved": "Paramètres enregistrés.",
+      "how_title": "Comment ça marche",
+      "how_1": "Quand le mode est activé, toutes les pages publiques (Accueil, Boutique, Produit, Contact…) affichent une page de maintenance.",
+      "how_2": "Les administrateurs conservent l'accès complet au panneau d'administration pour désactiver le mode.",
+      "how_3": "Les moteurs de recherche voient une page en noindex tant que la maintenance est active."
     },
     "users": {
       "title": "Utilisateurs",
