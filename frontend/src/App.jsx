@@ -40,75 +40,19 @@ import { useMaintenance } from './hooks/useSettings';
 import { useAuthStore } from './store/authStore';
 import SEO from './components/common/SEO';
 
-function Storefront() {
-  return (
-    <Layout>
-      <Routes>
-        <Route index element={<HomePage />} />
-        <Route path="shop" element={<ShopPage />} />
-        <Route path="product/:slug" element={<ProductPage />} />
-        <Route path="cart" element={<CartPage />} />
-        <Route path="login" element={<LoginPage />} />
-        <Route path="register" element={<RegisterPage />} />
-        <Route path="about" element={<AboutPage />} />
-        <Route path="contact" element={<ContactPage />} />
-        <Route path="brands" element={<BrandsPage />} />
-
-        <Route element={<RequireAuth />}>
-          <Route path="checkout" element={<CheckoutPage />} />
-          <Route path="wishlist" element={<WishlistPage />} />
-          <Route path="orders/:id" element={<OrderConfirmPage />} />
-        </Route>
-
-        <Route path="account" element={<AccountLayout />}>
-          <Route index element={<AccountOverview />} />
-          <Route path="profile" element={<AccountProfile />} />
-          <Route path="addresses" element={<AccountAddresses />} />
-          <Route path="orders" element={<AccountOrders />} />
-          <Route path="security" element={<AccountSecurity />} />
-          <Route path="preferences" element={<AccountPreferences />} />
-        </Route>
-
-        <Route path="*" element={<NotFoundPage />} />
-      </Routes>
-    </Layout>
-  );
-}
-
-function AdminApp() {
-  return (
-    <Routes>
-      <Route path="admin" element={<AdminLayout />}>
-        <Route index element={<AdminDashboard />} />
-        <Route path="products" element={<AdminProducts />} />
-        <Route path="brands" element={<AdminBrands />} />
-        <Route path="categories" element={<AdminCategories />} />
-        <Route path="orders" element={<AdminOrders />} />
-        <Route path="orders/:id" element={<AdminOrderDetail />} />
-        <Route path="users" element={<AdminUsers />} />
-        <Route path="assistant" element={<AdminAssistant />} />
-        <Route path="settings" element={<AdminSettings />} />
-      </Route>
-    </Routes>
-  );
-}
-
 export default function App() {
   const location = useLocation();
   const isAdmin = useAuthStore((s) => s.user?.role === 'admin');
   const { data: settings } = useMaintenance();
 
   // When maintenance is on, hide the storefront from non-admins. Admins
-  // keep full access at /admin/* so they can disable the flag. The
-  // /admin/* routes are mounted at the top level (outside <Layout>) and
-  // never get intercepted by the maintenance page.
+  // keep full access at /admin/* so they can disable the flag.
   const inAdmin = location.pathname.startsWith('/admin');
   const showMaintenance =
     !!settings?.maintenanceMode && !isAdmin && !inAdmin;
 
-  // When the storefront is gated, make sure search engines don't index
-  // the maintenance page. The <SEO> component inside MaintenancePage also
-  // sets noindex, but doing it here avoids a flash.
+  // Inject a noindex meta while the storefront is gated, so search
+  // engines never index the maintenance page.
   useEffect(() => {
     if (showMaintenance) {
       const meta = document.createElement('meta');
@@ -135,8 +79,57 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="admin/*" element={<AdminApp />} />
-      <Route path="/*" element={<Storefront />} />
+      {/* Admin section — mounted at the top level (outside the storefront
+          Layout) so it renders with its own chrome and is never subject
+          to the maintenance-mode storefront gate. */}
+      <Route path="/admin" element={<AdminLayout />}>
+        <Route index element={<AdminDashboard />} />
+        <Route path="products" element={<AdminProducts />} />
+        <Route path="brands" element={<AdminBrands />} />
+        <Route path="categories" element={<AdminCategories />} />
+        <Route path="orders" element={<AdminOrders />} />
+        <Route path="orders/:id" element={<AdminOrderDetail />} />
+        <Route path="users" element={<AdminUsers />} />
+        <Route path="assistant" element={<AdminAssistant />} />
+        <Route path="settings" element={<AdminSettings />} />
+      </Route>
+
+      {/* Storefront — every other route lives under the public Layout. */}
+      <Route
+        path="/*"
+        element={
+          <Layout>
+            <Routes>
+              <Route index element={<HomePage />} />
+              <Route path="shop" element={<ShopPage />} />
+              <Route path="product/:slug" element={<ProductPage />} />
+              <Route path="cart" element={<CartPage />} />
+              <Route path="login" element={<LoginPage />} />
+              <Route path="register" element={<RegisterPage />} />
+              <Route path="about" element={<AboutPage />} />
+              <Route path="contact" element={<ContactPage />} />
+              <Route path="brands" element={<BrandsPage />} />
+
+              <Route element={<RequireAuth />}>
+                <Route path="checkout" element={<CheckoutPage />} />
+                <Route path="wishlist" element={<WishlistPage />} />
+                <Route path="orders/:id" element={<OrderConfirmPage />} />
+              </Route>
+
+              <Route path="account" element={<AccountLayout />}>
+                <Route index element={<AccountOverview />} />
+                <Route path="profile" element={<AccountProfile />} />
+                <Route path="addresses" element={<AccountAddresses />} />
+                <Route path="orders" element={<AccountOrders />} />
+                <Route path="security" element={<AccountSecurity />} />
+                <Route path="preferences" element={<AccountPreferences />} />
+              </Route>
+
+              <Route path="*" element={<NotFoundPage />} />
+            </Routes>
+          </Layout>
+        }
+      />
     </Routes>
   );
 }
