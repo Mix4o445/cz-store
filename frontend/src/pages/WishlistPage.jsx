@@ -4,6 +4,7 @@ import { useWishlistStore } from '@/store/wishlistStore';
 import { useLocalized } from '@/hooks/useLocalized';
 import { formatPrice } from '@/utils/formatPrice';
 import { Heart } from 'lucide-react';
+import SEO from '@/components/common/SEO';
 
 export default function WishlistPage() {
   const { t } = useTranslation();
@@ -12,17 +13,22 @@ export default function WishlistPage() {
 
   if (items.length === 0) {
     return (
-      <section className="container-app py-24 text-center space-y-5">
-        <Heart size={32} strokeWidth={1.4} className="mx-auto text-ink-muted" />
-        <h1 className="font-display font-medium text-display-sm">{t('nav.wishlist')}</h1>
-        <p className="text-ink-muted text-sm">{t('wishlist.empty')}</p>
-        <Link to="/shop" className="btn-primary inline-flex">{t('nav.shop')}</Link>
-      </section>
+      <>
+        <SEO title="Favoris" noindex />
+        <section className="container-app py-24 text-center space-y-5">
+          <Heart size={32} strokeWidth={1.4} className="mx-auto text-ink-muted" />
+          <h1 className="font-display font-medium text-display-sm">{t('nav.wishlist')}</h1>
+          <p className="text-ink-muted text-sm">{t('wishlist.empty')}</p>
+          <Link to="/shop" className="btn-primary inline-flex">{t('nav.shop')}</Link>
+        </section>
+      </>
     );
   }
 
   return (
-    <section className="container-app py-12 md:py-16">
+    <>
+      <SEO title="Favoris" noindex />
+      <section className="container-app py-12 md:py-16">
       <header className="mb-10 border-b border-line pb-6">
         <p className="eyebrow mb-3">{t('wishlist.eyebrow')}</p>
         <h1 className="font-display font-medium text-display-md">{t('nav.wishlist')}.</h1>
@@ -48,5 +54,6 @@ export default function WishlistPage() {
         ))}
       </ul>
     </section>
+    </>
   );
 }

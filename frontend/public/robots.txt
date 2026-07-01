@@ -1,12 +1,14 @@
 User-agent: *
 Allow: /
 
-# Keep private / transactional areas out of the index
+# Keep private / transactional areas out of the index.
 Disallow: /account
 Disallow: /admin
 Disallow: /checkout
 Disallow: /cart
 Disallow: /login
 Disallow: /register
+Disallow: /wishlist
+Disallow: /orders/
 
-Sitemap: https://benevolent-daffodil-3a6efe.netlify.app/sitemap.xml
+Sitemap: https://coolzone.ma/sitemap.xml

@@ -11,6 +11,7 @@ import { useCreateOrder } from '@/hooks/useOrders';
 import { useLocalized } from '@/hooks/useLocalized';
 import { getApiErrorMessage } from '@/hooks/useAuth';
 import { formatPrice } from '@/utils/formatPrice';
+import SEO from '@/components/common/SEO';
 
 const inputCls =
   'mt-2 w-full bg-transparent border-b border-ink/20 px-0 py-2.5 outline-none focus:border-ink';
@@ -172,7 +173,9 @@ export default function CheckoutPage() {
   };
 
   return (
-    <section className="container-app py-12 md:py-16">
+    <>
+      <SEO title="Finaliser la commande" noindex />
+      <section className="container-app py-12 md:py-16">
       <header className="mb-10 border-b border-line pb-6">
         <p className="eyebrow mb-3">{t('checkout.eyebrow')}</p>
         <h1 className="font-display font-medium text-display-md">{t('checkout.title')}</h1>
@@ -398,5 +401,6 @@ export default function CheckoutPage() {
         </aside>
       </form>
     </section>
+    </>
   );
 }

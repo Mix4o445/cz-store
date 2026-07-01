@@ -5,6 +5,7 @@ import { useOrder } from '@/hooks/useOrders';
 import { useLocalized } from '@/hooks/useLocalized';
 import { getApiErrorMessage } from '@/hooks/useAuth';
 import { formatPrice } from '@/utils/formatPrice';
+import SEO from '@/components/common/SEO';
 
 const STATUS_TONES = {
   pending: 'bg-line text-ink-muted',
@@ -51,7 +52,9 @@ export default function OrderConfirmPage() {
   const isBank = order.payment?.method === 'bank_transfer';
 
   return (
-    <section className="container-app py-12 md:py-16 max-w-4xl">
+    <>
+      <SEO title="Commande confirmée" noindex />
+      <section className="container-app py-12 md:py-16 max-w-4xl">
       <header className="mb-12 border-b border-line pb-8 flex flex-col items-start gap-4">
         <CheckCircle2 size={36} strokeWidth={1.4} className="text-emerald-600" />
         <p className="eyebrow">{t('order_confirm.eyebrow')}</p>
@@ -203,5 +206,6 @@ export default function OrderConfirmPage() {
         </aside>
       </div>
     </section>
+    </>
   );
 }

@@ -13,6 +13,7 @@ import { useAuthStore } from '@/store/authStore';
 import RatingStars from '@/components/common/RatingStars';
 import Badge from '@/components/common/Badge';
 import ProductReviews from '@/components/product/ProductReviews';
+import SEO, { absoluteUrl } from '@/components/common/SEO';
 
 function ProductPlaceholder() {
   return (
@@ -120,8 +121,60 @@ export default function ProductPage() {
     }
   };
 
+  // --- SEO / structured data ------------------------------------------------
+  const productName = name;
+  const productDescription = local(product.description) ||
+    `${productName}${product.brand ? ` — ${product.brand}` : ''} disponible sur CoolZone, livré partout au Maroc.`;
+  const productUrl = absoluteUrl(`/product/${product.slug}`);
+  const productImage = absoluteUrl(images[0] || '/og-cover.png');
+  const inStock = (displayStock ?? 0) > 0;
+  const productLd = {
+    '@context': 'https://schema.org',
+    '@type': 'Product',
+    name: productName,
+    description: productDescription,
+    image: images.length ? images.map((i) => absoluteUrl(i)) : [productImage],
+    sku: currentVariant?._id || product._id,
+    brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
+    category: product.category ? { '@type': 'Thing', name: product.category } : undefined,
+    offers: {
+      '@type': 'Offer',
+      url: productUrl,
+      priceCurrency: 'MAD',
+      price: Number(displayPrice ?? 0).toFixed(2),
+      availability: inStock
+        ? 'https://schema.org/InStock'
+        : 'https://schema.org/OutOfStock',
+      seller: { '@type': 'Organization', name: 'CoolZone' },
+    },
+  };
+  if (product.rating && product.numReviews) {
+    productLd.aggregateRating = {
+      '@type': 'AggregateRating',
+      ratingValue: Number(product.rating).toFixed(1),
+      reviewCount: product.numReviews,
+    };
+  }
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Accueil', item: absoluteUrl('/') },
+      { '@type': 'ListItem', position: 2, name: 'Boutique', item: absoluteUrl('/shop') },
+      { '@type': 'ListItem', position: 3, name: productName, item: productUrl },
+    ],
+  };
+
   return (
     <>
+      <SEO
+        title={productName}
+        description={productDescription}
+        path={`/product/${product.slug}`}
+        image={images[0] || '/og-cover.png'}
+        type="product"
+        jsonLd={[productLd, breadcrumbLd]}
+      />
       <section className="container-app py-12 md:py-16 grid md:grid-cols-2 gap-10 md:gap-16">
         <div className="md:sticky md:top-24 h-fit space-y-4">
           <div className="relative bg-gradient-to-b from-white to-chrome aspect-[4/5] overflow-hidden rounded-xl ring-1 ring-line">

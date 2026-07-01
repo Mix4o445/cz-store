@@ -3,6 +3,7 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { useLogin, getApiErrorMessage } from '@/hooks/useAuth';
+import SEO from '@/components/common/SEO';
 
 export default function LoginPage() {
   const { t } = useTranslation();
@@ -24,7 +25,9 @@ export default function LoginPage() {
   };
 
   return (
-    <section className="container-app py-16 md:py-24 grid md:grid-cols-12 gap-12 items-start">
+    <>
+      <SEO title="Connexion" noindex />
+      <section className="container-app py-16 md:py-24 grid md:grid-cols-12 gap-12 items-start">
       <div className="md:col-span-5">
         <p className="eyebrow mb-4">{t('login_page.eyebrow')}</p>
         <h1 className="font-display font-medium text-display-md mb-4">{t('auth.login')}.</h1>
@@ -86,5 +89,6 @@ export default function LoginPage() {
         </div>
       </form>
     </section>
+    </>
   );
 }

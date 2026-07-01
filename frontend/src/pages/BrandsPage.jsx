@@ -5,6 +5,7 @@ import { ArrowUpRight, Loader2 } from 'lucide-react';
 import { useBrands } from '@/hooks/useBrands';
 import { useProductList } from '@/hooks/useProducts';
 import Reveal from '@/components/common/Reveal';
+import SEO, { absoluteUrl } from '@/components/common/SEO';
 
 const BRAND_TINT = '#1d283a';
 
@@ -22,7 +23,23 @@ export default function BrandsPage() {
     return counts;
   }, [productsData]);
 
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Accueil', item: absoluteUrl('/') },
+      { '@type': 'ListItem', position: 2, name: 'Nos marques', item: absoluteUrl('/brands') },
+    ],
+  };
+
   return (
+    <>
+    <SEO
+      title="Nos marques"
+      description="CoolZone distribue les plus grandes marques de climatisation : Daikin, Gree, Midea, Carrier, CIAT, Ingelec, Samsung, LG, Mitsubishi. Garantie constructeur, livraison partout au Maroc."
+      path="/brands"
+      jsonLd={breadcrumbLd}
+    />
     <section className="container-app py-16 md:py-24">
       <div className="grid md:grid-cols-12 gap-10 items-end mb-12 md:mb-16">
         <Reveal className="md:col-span-5">
@@ -119,5 +136,6 @@ export default function BrandsPage() {
         </ul>
       )}
     </section>
+    </>
   );
 }

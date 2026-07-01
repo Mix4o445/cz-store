@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useLocation } from 'react-router-dom';
 import { Loader2, ChevronLeft, ChevronRight, SlidersHorizontal, X } from 'lucide-react';
 import ProductGrid from '@/components/product/ProductGrid';
 import { useProductList } from '@/hooks/useProducts';
@@ -8,6 +8,7 @@ import { useCategories } from '@/hooks/useCategories';
 import { useBrands } from '@/hooks/useBrands';
 import { useLocalized } from '@/hooks/useLocalized';
 import { getApiErrorMessage } from '@/hooks/useAuth';
+import SEO, { absoluteUrl } from '@/components/common/SEO';
 
 const SORT_MAP = {
   new: '-createdAt',
@@ -36,6 +37,7 @@ export default function ShopPage() {
   const { t } = useTranslation();
   const local = useLocalized();
   const [params, setParams] = useSearchParams();
+  const location = useLocation();
   const [sort, setSort] = useState('new');
   const [page, setPage] = useState(1);
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -69,6 +71,47 @@ export default function ShopPage() {
   const products = data?.items ?? [];
   const total = data?.total ?? 0;
   const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+
+  // SEO: derive a meaningful title and description from the active filters
+  // so each filtered view has its own <title>, description and canonical URL.
+  const activeCategory = useMemo(
+    () => categories.find((c) => c.slug === category),
+    [categories, category]
+  );
+  const activeBrand = useMemo(
+    () => (brand ? brands.find((b) => b.name === brand)?.name : null),
+    [brands, brand]
+  );
+  const seoTitle = activeCategory
+    ? `${local(activeCategory.name)} — ${activeBrand ?? 'Toutes marques'}`
+    : activeBrand
+    ? `Climatiseurs ${activeBrand} au Maroc`
+    : t('shop.title');
+  const seoDescription = activeCategory
+    ? `Découvrez notre sélection de ${local(activeCategory.name)}${activeBrand ? ` ${activeBrand}` : ''} au Maroc. Prix en MAD, livraison rapide, garantie constructeur.`
+    : activeBrand
+    ? `Climatiseurs ${activeBrand} au Maroc. Prix en MAD, livraison rapide, garantie constructeur.`
+    : 'Toute la collection CoolZone : climatiseurs split, multi-split, gainable et cassette des plus grandes marques. Prix en MAD, livraison rapide au Maroc.';
+  const breadcrumb = [
+    { name: 'Accueil', url: absoluteUrl('/') },
+    { name: 'Boutique', url: absoluteUrl('/shop') },
+  ];
+  if (activeCategory) {
+    breadcrumb.push({ name: local(activeCategory.name), url: absoluteUrl(`/shop?category=${activeCategory.slug}`) });
+  }
+  if (activeBrand) {
+    breadcrumb.push({ name: activeBrand, url: absoluteUrl(`/shop?brand=${encodeURIComponent(activeBrand)}`) });
+  }
+  const breadcrumbLd = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: breadcrumb.map((b, i) => ({
+      '@type': 'ListItem',
+      position: i + 1,
+      name: b.name,
+      item: b.url,
+    })),
+  };
 
   const goToPage = (next) => {
     const clamped = Math.min(Math.max(1, next), totalPages);
@@ -150,7 +193,14 @@ export default function ShopPage() {
   );
 
   return (
-    <section className="container-app py-12 md:py-16">
+    <>
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        path={location.pathname + location.search}
+        jsonLd={breadcrumbLd}
+      />
+      <section className="container-app py-12 md:py-16">
       <header className="mb-10 grid md:grid-cols-12 gap-6 items-end border-b border-line pb-8">
         <div className="md:col-span-7">
           <p className="eyebrow mb-3">{t('shop.eyebrow')}</p>
@@ -314,6 +364,7 @@ export default function ShopPage() {
           </div>
         </div>
       )}
-    </section>
+      </section>
+    </>
   );
 }

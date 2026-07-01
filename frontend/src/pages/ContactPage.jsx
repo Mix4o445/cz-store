@@ -1,9 +1,16 @@
 import { useTranslation } from 'react-i18next';
 import { Mail, MapPin, Phone } from 'lucide-react';
+import SEO from '@/components/common/SEO';
 
 export default function ContactPage() {
   const { t } = useTranslation();
   return (
+    <>
+    <SEO
+      title="Contact"
+      description="Contactez CoolZone pour un devis, une question ou un projet de climatisation. Basés à Casablanca, livraison partout au Maroc."
+      path="/contact"
+    />
     <section className="container-app py-16 md:py-24 grid md:grid-cols-12 gap-12 items-start">
       <div className="md:col-span-5 space-y-8">
         <div>
@@ -40,5 +47,6 @@ export default function ContactPage() {
         <button type="submit" className="btn-primary">{t('contact.send')}</button>
       </form>
     </section>
+    </>
   );
 }

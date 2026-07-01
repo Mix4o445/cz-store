@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { Loader2 } from 'lucide-react';
 import { useRegister, getApiErrorMessage } from '@/hooks/useAuth';
+import SEO from '@/components/common/SEO';
 
 export default function RegisterPage() {
   const { t } = useTranslation();
@@ -20,7 +21,9 @@ export default function RegisterPage() {
   };
 
   return (
-    <section className="container-app py-16 md:py-24 grid md:grid-cols-12 gap-12 items-start">
+    <>
+      <SEO title="Créer un compte" noindex />
+      <section className="container-app py-16 md:py-24 grid md:grid-cols-12 gap-12 items-start">
       <div className="md:col-span-5">
         <p className="eyebrow mb-4">{t('register_page.eyebrow')}</p>
         <h1 className="font-display font-medium text-display-md mb-4">{t('auth.register')}.</h1>
@@ -76,5 +79,6 @@ export default function RegisterPage() {
         </div>
       </form>
     </section>
+    </>
   );
 }

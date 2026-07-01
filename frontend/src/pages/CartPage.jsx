@@ -5,6 +5,7 @@ import { useCartStore } from '@/store/cartStore';
 import { useEnrichedCart } from '@/hooks/useEnrichedCart';
 import { useLocalized } from '@/hooks/useLocalized';
 import { formatPrice } from '@/utils/formatPrice';
+import SEO from '@/components/common/SEO';
 
 export default function CartPage() {
   const { t } = useTranslation();
@@ -14,16 +15,21 @@ export default function CartPage() {
 
   if (items.length === 0) {
     return (
-      <section className="container-app py-24 text-center space-y-6">
-        <ShoppingBag size={32} strokeWidth={1.4} className="mx-auto text-ink-muted" />
-        <h1 className="font-display font-medium text-display-sm">{t('cart.empty')}</h1>
-        <Link to="/shop" className="btn-primary inline-flex">{t('cart.empty_cta')}</Link>
-      </section>
+      <>
+        <SEO title="Panier" noindex />
+        <section className="container-app py-24 text-center space-y-6">
+          <ShoppingBag size={32} strokeWidth={1.4} className="mx-auto text-ink-muted" />
+          <h1 className="font-display font-medium text-display-sm">{t('cart.empty')}</h1>
+          <Link to="/shop" className="btn-primary inline-flex">{t('cart.empty_cta')}</Link>
+        </section>
+      </>
     );
   }
 
   return (
-    <section className="container-app py-12 md:py-16 grid lg:grid-cols-[1fr_380px] gap-10">
+    <>
+      <SEO title="Panier" noindex />
+      <section className="container-app py-12 md:py-16 grid lg:grid-cols-[1fr_380px] gap-10">
       <div>
         <header className="mb-8 border-b border-line pb-6">
           <p className="eyebrow mb-3">{t('cart.title')}</p>
@@ -87,5 +93,6 @@ export default function CartPage() {
         <Link to="/shop" className="btn-ghost w-full text-xs">{t('cart.continue')}</Link>
       </aside>
     </section>
+    </>
   );
 }

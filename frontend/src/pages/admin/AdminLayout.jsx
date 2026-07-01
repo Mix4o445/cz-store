@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuthStore } from '@/store/authStore';
+import SEO from '@/components/common/SEO';
 
 const NAV = [
   { to: '.', icon: LayoutDashboard, key: 'dashboard', end: true },
@@ -42,7 +43,9 @@ export default function AdminLayout() {
   }
 
   return (
-    <section className="bg-chrome min-h-[calc(100vh-5rem)]">
+    <>
+      <SEO title="Admin" noindex />
+      <section className="bg-chrome min-h-[calc(100vh-5rem)]">
       <div className="container-app py-10 md:py-12">
         <header className="flex items-center justify-between border-b border-line pb-6 mb-8">
           <div>
@@ -112,5 +115,6 @@ export default function AdminLayout() {
         </div>
       </div>
     </section>
+    </>
   );
 }

@@ -4,6 +4,7 @@ import { LayoutGrid, User, MapPin, Package, Lock, Settings, LogOut } from 'lucid
 import clsx from 'clsx';
 import { useAuthStore } from '@/store/authStore';
 import { useLogout } from '@/hooks/useAuth';
+import SEO from '@/components/common/SEO';
 
 const NAV = [
   { to: '.', icon: LayoutGrid, key: 'overview', end: true },
@@ -48,7 +49,9 @@ export default function AccountLayout() {
   const firstName = user.name?.split(' ')[0] ?? '';
 
   return (
-    <section className="container-app py-12 md:py-16">
+    <>
+      <SEO title="Mon compte" noindex />
+      <section className="container-app py-12 md:py-16">
       <header className="border-b border-line pb-8 mb-10 flex flex-col md:flex-row md:items-end md:justify-between gap-4">
         <div>
           <p className="eyebrow mb-3">{t('nav.account')}</p>
@@ -119,5 +122,6 @@ export default function AccountLayout() {
         </div>
       </div>
     </section>
+    </>
   );
 }
