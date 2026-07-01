@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Heart, Search, ShoppingBag, User } from 'lucide-react';
+import { Home, Heart, Search, ShoppingBag, User, Award } from 'lucide-react';
 import clsx from 'clsx';
 import { useTranslation } from 'react-i18next';
 import { useCartStore } from '@/store/cartStore';
@@ -11,8 +11,8 @@ export default function BottomTabBar() {
   const tabs = [
     { to: '/', icon: Home, label: t('nav.home'), end: true },
     { to: '/shop', icon: Search, label: t('nav.shop') },
+    { to: '/brands', icon: Award, label: t('nav.brands') },
     { to: '/cart', icon: ShoppingBag, label: t('nav.cart'), badge: count },
-    { to: '/wishlist', icon: Heart, label: t('nav.wishlist') },
     { to: '/account', icon: User, label: t('nav.account') },
   ];
 
