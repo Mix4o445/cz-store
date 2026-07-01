@@ -94,42 +94,37 @@ export default function App() {
         <Route path="settings" element={<AdminSettings />} />
       </Route>
 
-      {/* Storefront — every other route lives under the public Layout. */}
-      <Route
-        path="/*"
-        element={
-          <Layout>
-            <Routes>
-              <Route index element={<HomePage />} />
-              <Route path="shop" element={<ShopPage />} />
-              <Route path="product/:slug" element={<ProductPage />} />
-              <Route path="cart" element={<CartPage />} />
-              <Route path="login" element={<LoginPage />} />
-              <Route path="register" element={<RegisterPage />} />
-              <Route path="about" element={<AboutPage />} />
-              <Route path="contact" element={<ContactPage />} />
-              <Route path="brands" element={<BrandsPage />} />
+      {/* Storefront — the public Layout is a layout route. Its <Outlet/>
+          renders whichever child route matched. Every other URL falls
+          through to the catch-all 404. */}
+      <Route element={<Layout />}>
+        <Route index element={<HomePage />} />
+        <Route path="shop" element={<ShopPage />} />
+        <Route path="product/:slug" element={<ProductPage />} />
+        <Route path="cart" element={<CartPage />} />
+        <Route path="login" element={<LoginPage />} />
+        <Route path="register" element={<RegisterPage />} />
+        <Route path="about" element={<AboutPage />} />
+        <Route path="contact" element={<ContactPage />} />
+        <Route path="brands" element={<BrandsPage />} />
 
-              <Route element={<RequireAuth />}>
-                <Route path="checkout" element={<CheckoutPage />} />
-                <Route path="wishlist" element={<WishlistPage />} />
-                <Route path="orders/:id" element={<OrderConfirmPage />} />
-              </Route>
+        <Route element={<RequireAuth />}>
+          <Route path="checkout" element={<CheckoutPage />} />
+          <Route path="wishlist" element={<WishlistPage />} />
+          <Route path="orders/:id" element={<OrderConfirmPage />} />
+        </Route>
 
-              <Route path="account" element={<AccountLayout />}>
-                <Route index element={<AccountOverview />} />
-                <Route path="profile" element={<AccountProfile />} />
-                <Route path="addresses" element={<AccountAddresses />} />
-                <Route path="orders" element={<AccountOrders />} />
-                <Route path="security" element={<AccountSecurity />} />
-                <Route path="preferences" element={<AccountPreferences />} />
-              </Route>
+        <Route path="account" element={<AccountLayout />}>
+          <Route index element={<AccountOverview />} />
+          <Route path="profile" element={<AccountProfile />} />
+          <Route path="addresses" element={<AccountAddresses />} />
+          <Route path="orders" element={<AccountOrders />} />
+          <Route path="security" element={<AccountSecurity />} />
+          <Route path="preferences" element={<AccountPreferences />} />
+        </Route>
 
-              <Route path="*" element={<NotFoundPage />} />
-            </Routes>
-          </Layout>
-        }
-      />
+        <Route path="*" element={<NotFoundPage />} />
+      </Route>
     </Routes>
   );
 }
