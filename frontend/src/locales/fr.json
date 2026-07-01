@@ -434,6 +434,8 @@
       "variant_price": "Prix",
       "variant_priceOld": "Ancien prix",
       "variant_stock": "Stock",
+      "duplicate_variant": "Dupliquer cette variante",
+      "remove_variant": "Supprimer cette variante",
       "save": "Enregistrer",
       "saved": "Produit enregistré.",
       "empty": "Aucun produit. Cliquez sur \"Ajouter un produit\" pour commencer."

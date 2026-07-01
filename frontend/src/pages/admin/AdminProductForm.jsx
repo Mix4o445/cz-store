@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Plus, X, CheckCircle2, ImageUp } from 'lucide-react';
+import { Loader2, Plus, X, CheckCircle2, ImageUp, Copy } from 'lucide-react';
 import { useBrands } from '@/hooks/useBrands';
 import { useCategories } from '@/hooks/useCategories';
 import { useCreateProduct, useUpdateProduct, useTags } from '@/hooks/useAdmin';
@@ -111,6 +111,16 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
       'variants',
       form.variants.map((v, idx) => (idx === i ? { ...v, [key]: value } : v))
     );
+  const duplicateVariant = (i) => {
+    const original = form.variants[i];
+    const copy = { ...original };
+    delete copy._id;
+    setField('variants', [
+      ...form.variants.slice(0, i + 1),
+      copy,
+      ...form.variants.slice(i + 1),
+    ]);
+  };
   const removeVariant = (i) =>
     setField('variants', form.variants.filter((_, idx) => idx !== i));
 
@@ -460,14 +470,26 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
                   placeholder="Stock"
                   className={inputCls}
                 />
-                <button
-                  type="button"
-                  onClick={() => removeVariant(i)}
-                  className="p-2 text-ink-muted hover:text-signal rounded-full hover:bg-signal/5 justify-self-end"
-                  aria-label="remove variant"
-                >
-                  <X size={14} />
-                </button>
+                <div className="flex items-center justify-end gap-1">
+                  <button
+                    type="button"
+                    title={t('admin.products.duplicate_variant')}
+                    onClick={() => duplicateVariant(i)}
+                    className="p-2 text-ink-muted hover:text-ink rounded-full hover:bg-ink/5"
+                    aria-label={t('admin.products.duplicate_variant')}
+                  >
+                    <Copy size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    title={t('admin.products.remove_variant')}
+                    onClick={() => removeVariant(i)}
+                    className="p-2 text-ink-muted hover:text-signal rounded-full hover:bg-signal/5"
+                    aria-label={t('admin.products.remove_variant')}
+                  >
+                    <X size={14} />
+                  </button>
+                </div>
               </li>
             ))}
           </ul>
