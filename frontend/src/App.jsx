@@ -10,6 +10,7 @@ import LoginPage from './pages/LoginPage';
 import RegisterPage from './pages/RegisterPage';
 import AboutPage from './pages/AboutPage';
 import ContactPage from './pages/ContactPage';
+import BrandsPage from './pages/BrandsPage';
 import NotFoundPage from './pages/NotFoundPage';
 
 import AccountLayout from './pages/account/AccountLayout';
@@ -45,6 +46,7 @@ export default function App() {
         <Route path="register" element={<RegisterPage />} />
         <Route path="about" element={<AboutPage />} />
         <Route path="contact" element={<ContactPage />} />
+        <Route path="brands" element={<BrandsPage />} />
 
         <Route element={<RequireAuth />}>
           <Route path="checkout" element={<CheckoutPage />} />

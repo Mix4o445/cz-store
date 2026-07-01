@@ -42,6 +42,7 @@ export default function Navbar() {
         <nav className="hidden md:flex items-center gap-7">
           <NavLink to="/" end className={linkClass}>{t('nav.home')}</NavLink>
           <NavLink to="/shop" className={linkClass}>{t('nav.shop')}</NavLink>
+          <NavLink to="/brands" className={linkClass}>{t('nav.brands')}</NavLink>
           <NavLink to="/about" className={linkClass}>{t('nav.about')}</NavLink>
           <NavLink to="/contact" className={linkClass}>{t('nav.contact')}</NavLink>
         </nav>
