@@ -120,6 +120,16 @@ export function useDeleteProduct() {
     },
   });
 }
+export function useDuplicateProduct() {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (id) => productsApi.duplicate(id),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['products'] });
+      qc.invalidateQueries({ queryKey: ['admin', 'dashboard'] });
+    },
+  });
+}
 
 /* Tags */
 export function useTags() {

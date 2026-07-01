@@ -11,4 +11,5 @@ export const productsApi = {
   create: (payload) => client.post('/products', payload).then((r) => r.data),
   update: (id, payload) => client.put(`/products/${id}`, payload).then((r) => r.data),
   remove: (id) => client.delete(`/products/${id}`).then((r) => r.data),
+  duplicate: (id) => client.post(`/products/${id}/duplicate`).then((r) => r.data),
 };

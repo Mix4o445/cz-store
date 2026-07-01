@@ -1,6 +1,6 @@
 import { useState, useRef } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Plus, X, CheckCircle2, ImageUp, Copy } from 'lucide-react';
+import { Loader2, Plus, X, CheckCircle2, ImageUp, Copy, ChevronUp, ChevronDown } from 'lucide-react';
 import { useBrands } from '@/hooks/useBrands';
 import { useCategories } from '@/hooks/useCategories';
 import { useCreateProduct, useUpdateProduct, useTags } from '@/hooks/useAdmin';
@@ -120,6 +120,13 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
       copy,
       ...form.variants.slice(i + 1),
     ]);
+  };
+  const moveVariant = (i, dir) => {
+    const j = i + dir;
+    if (j < 0 || j >= form.variants.length) return;
+    const next = form.variants.slice();
+    [next[i], next[j]] = [next[j], next[i]];
+    setField('variants', next);
   };
   const removeVariant = (i) =>
     setField('variants', form.variants.filter((_, idx) => idx !== i));
@@ -470,12 +477,32 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
                   placeholder="Stock"
                   className={inputCls}
                 />
-                <div className="flex items-center justify-end gap-1">
+                <div className="flex items-center justify-end gap-0.5">
+                  <button
+                    type="button"
+                    title={t('admin.products.move_variant_up')}
+                    onClick={() => moveVariant(i, -1)}
+                    disabled={i === 0}
+                    className="p-1.5 text-ink-muted hover:text-ink rounded-full hover:bg-ink/5 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-muted"
+                    aria-label={t('admin.products.move_variant_up')}
+                  >
+                    <ChevronUp size={14} />
+                  </button>
+                  <button
+                    type="button"
+                    title={t('admin.products.move_variant_down')}
+                    onClick={() => moveVariant(i, 1)}
+                    disabled={i === form.variants.length - 1}
+                    className="p-1.5 text-ink-muted hover:text-ink rounded-full hover:bg-ink/5 disabled:opacity-30 disabled:hover:bg-transparent disabled:hover:text-ink-muted"
+                    aria-label={t('admin.products.move_variant_down')}
+                  >
+                    <ChevronDown size={14} />
+                  </button>
                   <button
                     type="button"
                     title={t('admin.products.duplicate_variant')}
                     onClick={() => duplicateVariant(i)}
-                    className="p-2 text-ink-muted hover:text-ink rounded-full hover:bg-ink/5"
+                    className="p-1.5 text-ink-muted hover:text-ink rounded-full hover:bg-ink/5"
                     aria-label={t('admin.products.duplicate_variant')}
                   >
                     <Copy size={14} />
@@ -484,7 +511,7 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
                     type="button"
                     title={t('admin.products.remove_variant')}
                     onClick={() => removeVariant(i)}
-                    className="p-2 text-ink-muted hover:text-signal rounded-full hover:bg-signal/5"
+                    className="p-1.5 text-ink-muted hover:text-signal rounded-full hover:bg-signal/5"
                     aria-label={t('admin.products.remove_variant')}
                   >
                     <X size={14} />

@@ -397,6 +397,8 @@
       "add": "Ajouter un produit",
       "edit": "Modifier",
       "delete": "Supprimer",
+      "duplicate": "Dupliquer",
+      "confirm_duplicate": "Créer une copie de ce produit ?",
       "confirm_delete": "Supprimer ce produit ?",
       "name_fr": "Nom (FR)",
       "name_ar": "Nom (AR)",
@@ -436,6 +438,8 @@
       "variant_stock": "Stock",
       "duplicate_variant": "Dupliquer cette variante",
       "remove_variant": "Supprimer cette variante",
+      "move_variant_up": "Monter la variante",
+      "move_variant_down": "Descendre la variante",
       "save": "Enregistrer",
       "saved": "Produit enregistré.",
       "empty": "Aucun produit. Cliquez sur \"Ajouter un produit\" pour commencer."

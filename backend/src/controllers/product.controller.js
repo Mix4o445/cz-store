@@ -198,3 +198,34 @@ export async function removeProduct(req, res, next) {
     next(e);
   }
 }
+
+export async function duplicateProduct(req, res, next) {
+  try {
+    if (!isUuid(req.params.id)) throw notFound('Product not found');
+    const src = await productsRepo.byId(req.params.id);
+    if (!src) throw notFound('Product not found');
+
+    const { _id, slug, createdAt, updatedAt, rating, numReviews, ...rest } = src;
+
+    const copy = {
+      ...rest,
+      name: {
+        ...(rest.name ?? {}),
+        fr: rest.name?.fr ? `${rest.name.fr} (copie)` : 'Produit (copie)',
+      },
+      slug: undefined,
+      stock: 0,
+      rating: 0,
+      numReviews: 0,
+      variants: Array.isArray(rest.variants)
+        ? rest.variants.map(({ _id, ...v }) => v)
+        : [],
+    };
+
+    deriveFromVariants(copy);
+    const item = await productsRepo.create(copy);
+    return created(res, item);
+  } catch (e) {
+    next(e);
+  }
+}

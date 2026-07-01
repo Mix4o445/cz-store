@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Plus, Pencil, Trash2 } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Copy } from 'lucide-react';
 import { useProductList } from '@/hooks/useProducts';
-import { useDeleteProduct } from '@/hooks/useAdmin';
+import { useDeleteProduct, useDuplicateProduct } from '@/hooks/useAdmin';
 import { getApiErrorMessage } from '@/hooks/useAuth';
 import { formatPrice } from '@/utils/formatPrice';
 import AdminProductForm from './AdminProductForm';
@@ -11,7 +11,9 @@ export default function AdminProducts() {
   const { t } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useProductList({ limit: 100 });
   const remove = useDeleteProduct();
+  const duplicate = useDuplicateProduct();
   const [editing, setEditing] = useState(null); // null | 'new' | product
+  const [duplicatingId, setDuplicatingId] = useState(null);
 
   const products = data?.items ?? [];
 
@@ -53,6 +55,11 @@ export default function AdminProducts() {
               <p className="text-signal mb-3">{getApiErrorMessage(error, t('common.error'))}</p>
               <button onClick={() => refetch()} className="btn-outline">{t('common.retry')}</button>
             </div>
+          )}
+          {duplicate.isError && (
+            <p className="mb-4 text-sm text-signal border-s-2 border-signal ps-3">
+              {getApiErrorMessage(duplicate.error)}
+            </p>
           )}
           {!isLoading && !isError && products.length === 0 && (
             <div className="border border-line p-12 text-center text-sm text-ink-muted">
@@ -115,6 +122,24 @@ export default function AdminProducts() {
                             aria-label={t('admin.products.edit')}
                           >
                             <Pencil size={14} strokeWidth={1.5} />
+                          </button>
+                          <button
+                            onClick={() => {
+                              setDuplicatingId(p._id);
+                              duplicate.mutate(p._id, {
+                                onSettled: () => setDuplicatingId(null),
+                              });
+                            }}
+                            disabled={duplicatingId === p._id}
+                            className="p-2 text-ink-muted hover:text-ink rounded-full hover:bg-ink/5 disabled:opacity-50"
+                            aria-label={t('admin.products.duplicate')}
+                            title={t('admin.products.duplicate')}
+                          >
+                            {duplicatingId === p._id ? (
+                              <Loader2 size={14} className="animate-spin" />
+                            ) : (
+                              <Copy size={14} strokeWidth={1.5} />
+                            )}
                           </button>
                           <button
                             onClick={() => {

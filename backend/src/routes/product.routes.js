@@ -6,6 +6,7 @@ import {
   createProduct,
   updateProduct,
   removeProduct,
+  duplicateProduct,
   listTags,
   listByIds,
 } from '../controllers/product.controller.js';
@@ -21,6 +22,7 @@ router.get('/featured', getFeatured);
 router.get('/:slug', getBySlug);
 
 router.post('/', authRequired, adminRequired, createProduct);
+router.post('/:id/duplicate', authRequired, adminRequired, duplicateProduct);
 router.put('/:id', authRequired, adminRequired, updateProduct);
 router.delete('/:id', authRequired, adminRequired, removeProduct);
 
