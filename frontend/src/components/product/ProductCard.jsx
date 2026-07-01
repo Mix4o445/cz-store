@@ -2,10 +2,10 @@ import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { Heart } from 'lucide-react';
 import { motion } from 'framer-motion';
 import { useTranslation } from 'react-i18next';
-import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useAuthStore } from '@/store/authStore';
 import { useLocalized } from '@/hooks/useLocalized';
+import { useAddToCart } from '@/hooks/useAddToCart';
 import { formatPrice } from '@/utils/formatPrice';
 
 export default function ProductCard({ product }) {
@@ -14,7 +14,7 @@ export default function ProductCard({ product }) {
   const navigate = useNavigate();
   const location = useLocation();
   const user = useAuthStore((s) => s.user);
-  const addItem = useCartStore((s) => s.addItem);
+  const addItem = useAddToCart();
   const toggleWish = useWishlistStore((s) => s.toggle);
   const liked = useWishlistStore((s) => s.has(product._id ?? product.slug));
 

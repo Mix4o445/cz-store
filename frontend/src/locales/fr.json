@@ -105,6 +105,9 @@
   },
   "cart": {
     "title": "Panier",
+    "added": "Ajouté au panier",
+    "view": "Voir",
+    "dismiss": "Fermer",
     "empty": "Votre panier est vide",
     "empty_cta": "Découvrir la boutique",
     "subtotal": "Sous-total",

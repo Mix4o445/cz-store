@@ -6,8 +6,8 @@ import clsx from 'clsx';
 import { useProductBySlug } from '@/hooks/useProducts';
 import { getApiErrorMessage } from '@/hooks/useAuth';
 import { useLocalized } from '@/hooks/useLocalized';
+import { useAddToCart } from '@/hooks/useAddToCart';
 import { formatPrice } from '@/utils/formatPrice';
-import { useCartStore } from '@/store/cartStore';
 import { useWishlistStore } from '@/store/wishlistStore';
 import { useAuthStore } from '@/store/authStore';
 import RatingStars from '@/components/common/RatingStars';
@@ -34,7 +34,7 @@ export default function ProductPage() {
   const { t } = useTranslation();
   const local = useLocalized();
   const { data: product, isLoading, isError, error, refetch } = useProductBySlug(slug);
-  const addItem = useCartStore((s) => s.addItem);
+  const addItem = useAddToCart();
   const toggleWish = useWishlistStore((s) => s.toggle);
   const navigate = useNavigate();
   const location = useLocation();
