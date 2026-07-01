@@ -1,7 +1,7 @@
-# 🧊 CoolZone — Fullstack E-Commerce
 
-Bilingual (FR / AR with RTL) e-commerce site for an air-conditioning shop in Morocco.
-See [`COOLZONE_PROJECT_PLAN.md`](./COOLZONE_PROJECT_PLAN.md) for the full plan.
+
+
+
 
 ## Stack
 
