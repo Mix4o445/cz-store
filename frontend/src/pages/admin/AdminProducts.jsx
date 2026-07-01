@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Plus, Pencil, Trash2, Copy, Star } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Copy, Star, Link as LinkIcon, Check } from 'lucide-react';
 import { useProductList } from '@/hooks/useProducts';
 import { useDeleteProduct, useDuplicateProduct, useUpdateProduct } from '@/hooks/useAdmin';
 import { getApiErrorMessage } from '@/hooks/useAuth';
@@ -16,6 +16,7 @@ export default function AdminProducts() {
   const [editing, setEditing] = useState(null); // null | 'new' | product
   const [duplicatingId, setDuplicatingId] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
+  const [copiedKey, setCopiedKey] = useState(null);
 
   const togglePopular = (p) => {
     setTogglingId(p._id);
@@ -23,6 +24,16 @@ export default function AdminProducts() {
       { id: p._id, isPopular: !p.isPopular },
       { onSettled: () => setTogglingId(null) }
     );
+  };
+
+  const copyToClipboard = async (key, value) => {
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedKey(key);
+      setTimeout(() => setCopiedKey((k) => (k === key ? null : k)), 1500);
+    } catch {
+      /* clipboard blocked — silently no-op */
+    }
   };
 
   const products = data?.items ?? [];
@@ -101,6 +112,42 @@ export default function AdminProducts() {
                           <div className="min-w-0">
                             <p className="font-medium truncate">{p.name?.fr}</p>
                             <p className="text-[11px] text-ink-muted truncate">{p.slug}</p>
+                            <div className="mt-0.5 flex items-center gap-1.5 text-[10px] text-ink-muted/80 font-mono">
+                              <span className="truncate max-w-[120px]" title={p._id}>
+                                #{p._id}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => copyToClipboard(`id-${p._id}`, p._id)}
+                                title={t('admin.products.copy_id')}
+                                aria-label={t('admin.products.copy_id')}
+                                className="inline-flex items-center justify-center w-4 h-4 rounded text-ink-muted/60 hover:text-ink hover:bg-ink/5 transition-colors"
+                              >
+                                {copiedKey === `id-${p._id}` ? (
+                                  <Check size={10} strokeWidth={2} />
+                                ) : (
+                                  <Copy size={10} strokeWidth={1.6} />
+                                )}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() =>
+                                  copyToClipboard(
+                                    `url-${p._id}`,
+                                    `${window.location.origin}/product/${p.slug}`
+                                  )
+                                }
+                                title={t('admin.products.copy_url')}
+                                aria-label={t('admin.products.copy_url')}
+                                className="inline-flex items-center justify-center w-4 h-4 rounded text-ink-muted/60 hover:text-ink hover:bg-ink/5 transition-colors"
+                              >
+                                {copiedKey === `url-${p._id}` ? (
+                                  <Check size={10} strokeWidth={2} />
+                                ) : (
+                                  <LinkIcon size={10} strokeWidth={1.6} />
+                                )}
+                              </button>
+                            </div>
                           </div>
                         </div>
                       </td>
