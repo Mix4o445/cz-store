@@ -196,7 +196,9 @@
     "sub": "Une sélection rigoureuse des plus grandes marques de climatisation et de confort thermique, distribuées avec garantie constructeur sur tout le territoire marocain.",
     "empty": "Aucune marque enregistrée pour le moment.",
     "no_description": "Distributeur officiel.",
-    "explore": "Voir les produits"
+    "explore": "Voir les produits",
+    "product_count_one": "{{count}} produit",
+    "product_count_other": "{{count}} produits"
   },
   "checkout": {
     "eyebrow": "Commande",

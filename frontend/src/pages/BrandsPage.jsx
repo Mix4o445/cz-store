@@ -1,7 +1,9 @@
+import { useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowUpRight, Loader2 } from 'lucide-react';
 import { useBrands } from '@/hooks/useBrands';
+import { useProductList } from '@/hooks/useProducts';
 import Reveal from '@/components/common/Reveal';
 
 const BRAND_TINT = '#1d283a';
@@ -9,6 +11,16 @@ const BRAND_TINT = '#1d283a';
 export default function BrandsPage() {
   const { t } = useTranslation();
   const { data: brands = [], isLoading } = useBrands();
+  const { data: productsData } = useProductList({ limit: 1000 });
+
+  const countsByBrand = useMemo(() => {
+    const counts = {};
+    for (const p of productsData?.items ?? []) {
+      if (!p.brand) continue;
+      counts[p.brand] = (counts[p.brand] ?? 0) + 1;
+    }
+    return counts;
+  }, [productsData]);
 
   return (
     <section className="container-app py-16 md:py-24">
@@ -46,7 +58,7 @@ export default function BrandsPage() {
                 to={`/shop?brand=${encodeURIComponent(b.name)}`}
                 className="group relative bg-paper h-full flex flex-col justify-between min-h-[220px] p-6 md:p-8 transition-colors hover:bg-chrome"
               >
-                <div className="flex items-start justify-between">
+                <div className="flex items-start justify-between gap-3">
                   {b.logo ? (
                     <span
                       role="img"
@@ -72,9 +84,16 @@ export default function BrandsPage() {
                       {b.name}
                     </span>
                   )}
-                  <span className="num text-[11px] text-ink-muted">
-                    {String(idx + 1).padStart(2, '0')}
-                  </span>
+                  <div className="flex flex-col items-end gap-1 shrink-0">
+                    <span className="num text-[11px] text-ink-muted">
+                      {String(idx + 1).padStart(2, '0')}
+                    </span>
+                    {typeof countsByBrand[b.name] === 'number' && (
+                      <span className="num text-[11px] text-ink-muted">
+                        {t('brands.product_count', { count: countsByBrand[b.name] })}
+                      </span>
+                    )}
+                  </div>
                 </div>
 
                 {b.description ? (
