@@ -2,26 +2,32 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
-/** Replace the %VITE_GSC_VERIFICATION_META% placeholder in index.html with
- *  a google-site-verification meta tag, or an empty string when unset. */
-function googleSiteVerificationPlugin() {
+const DEFAULT_SITE_URL = 'https://coolzone.ma';
+
+/** Resolve %VITE_*% placeholders in index.html with sensible fallbacks so
+ *  the build never fails when an env var is missing (e.g. on Vercel preview
+ *  builds that don't have VITE_SITE_URL set). */
+function envPlaceholdersPlugin() {
   return {
-    name: 'coolzone-google-site-verification',
+    name: 'coolzone-env-placeholders',
     transformIndexHtml: {
       order: 'pre',
       handler(html) {
-        const code = (process.env.VITE_GSC_VERIFICATION || '').trim();
-        const meta = code
-          ? `<meta name="google-site-verification" content="${code.replace(/"/g, '&quot;')}" />`
+        const siteUrl = (process.env.VITE_SITE_URL || DEFAULT_SITE_URL).replace(/\/+$/, '');
+        const gsc = (process.env.VITE_GSC_VERIFICATION || '').trim();
+        const gscMeta = gsc
+          ? `<meta name="google-site-verification" content="${gsc.replace(/"/g, '&quot;')}" />`
           : '';
-        return html.replaceAll('%VITE_GSC_VERIFICATION_META%', meta);
+        return html
+          .replaceAll('%VITE_SITE_URL%', siteUrl)
+          .replaceAll('%VITE_GSC_VERIFICATION_META%', gscMeta);
       },
     },
   };
 }
 
 export default defineConfig({
-  plugins: [googleSiteVerificationPlugin(), react()],
+  plugins: [envPlaceholdersPlugin(), react()],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
