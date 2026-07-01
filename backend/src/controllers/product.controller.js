@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import slugify from 'slugify';
 import { productsRepo } from '../db/products.repo.js';
 import { categoriesRepo } from '../db/categories.repo.js';
 import { ok, created } from '../utils/apiResponse.js';
@@ -47,6 +48,7 @@ const baseProductShape = {
   isPromo: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
   isPopular: z.boolean().optional(),
+  slug: z.string().optional().or(z.literal('')),
   tags: z.array(z.string()).optional(),
   deliveryFee: z.number().nonnegative().optional(),
   variants: z.array(variantSchema).optional(),
@@ -160,12 +162,22 @@ export async function getBySlug(req, res, next) {
   }
 }
 
+/** Normalize a user-supplied slug: trim, slugify. Returns the cleaned value or
+ *  an empty string when the input is empty / nullish. The repo layer is
+ *  responsible for auto-generating a slug when it receives an empty value. */
+function normalizeSlug(raw) {
+  if (raw == null) return '';
+  const cleaned = slugify(String(raw).trim(), { lower: true, strict: true });
+  return cleaned || '';
+}
+
 export async function createProduct(req, res, next) {
   try {
     const parsed = productSchema.safeParse(req.body);
     if (!parsed.success) throw badRequest('Invalid payload', parsed.error.flatten());
     if (parsed.data.tags) parsed.data.tags = parsed.data.tags.map((t) => t.toLowerCase().trim()).filter(Boolean);
     if (!parsed.data.category) delete parsed.data.category;
+    parsed.data.slug = normalizeSlug(parsed.data.slug);
     deriveFromVariants(parsed.data);
     const item = await productsRepo.create(parsed.data);
     return created(res, item);
@@ -182,6 +194,21 @@ export async function updateProduct(req, res, next) {
     if (!parsed.success) throw badRequest('Invalid payload', parsed.error.flatten());
     if (parsed.data.tags) parsed.data.tags = parsed.data.tags.map((t) => t.toLowerCase().trim()).filter(Boolean);
     if (parsed.data.category === '') parsed.data.category = null;
+    if ('slug' in parsed.data) {
+      // The form distinguishes three cases via the raw payload:
+      //  - `req.body.slug === undefined` ⇒ user didn't touch the field, keep
+      //    the existing slug (drop the key from the update).
+      //  - `req.body.slug === ''` ⇒ user explicitly cleared it; ask the repo
+      //    to auto-generate a fresh one.
+      //  - non-empty string ⇒ slugify and use it.
+      if (req.body.slug == null) {
+        delete parsed.data.slug;
+      } else {
+        const cleaned = normalizeSlug(req.body.slug);
+        parsed.data.slug = cleaned;
+        if (cleaned === '') delete parsed.data.slug; // signal auto-generate
+      }
+    }
     deriveFromVariants(parsed.data);
     const item = await productsRepo.updateById(req.params.id, parsed.data);
     if (!item) throw notFound('Product not found');

@@ -88,6 +88,11 @@ export const productsRepo = {
   async updateById(id, data) {
     const row = productToRow(data);
     if (row.variants) row.variants = ensureIds(row.variants);
+    // The user can clear the slug to request an auto-generated one. Fall back
+    // to the source name (which the controller has already preserved on `data`).
+    if (row.slug === '' || row.slug == null) {
+      row.slug = makeProductSlug(data.name?.fr ?? 'product');
+    }
     const { data: updated, error } = await supabase
       .from(TABLE)
       .update(row)

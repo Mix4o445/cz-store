@@ -33,6 +33,17 @@ export function errorHandler(err, req, res, _next) {
   if (err?.code === 11000) {
     return res.status(409).json({ success: false, message: 'Duplicate key', details: err.keyValue });
   }
+  // Supabase / Postgres unique constraint violation (e.g. duplicate slug).
+  if (err?.code === '23505' || /duplicate key value/i.test(String(err?.message))) {
+    const target = String(err?.details || err?.message || '').match(/\(([^)]+)\)/)?.[1];
+    return res.status(409).json({
+      success: false,
+      message: target
+        ? `Cette valeur est déjà utilisée pour le champ « ${target} ».`
+        : 'Cette valeur est déjà utilisée.',
+      field: target || null,
+    });
+  }
   // Mongoose validation
   if (err?.name === 'ValidationError') {
     return res.status(400).json({ success: false, message: 'Validation error', details: err.errors });

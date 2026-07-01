@@ -11,6 +11,7 @@ import { adminApi } from '@/api/admin.api';
 const EMPTY = {
   name: { fr: '' },
   description: { fr: '' },
+  slug: '',
   brand: '',
   category: '',
   price: 0,
@@ -73,6 +74,7 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
       ...initial,
       name: { fr: initial.name?.fr ?? '' },
       description: { fr: initial.description?.fr ?? '' },
+      slug: initial.slug ?? '',
       priceOld: initial.priceOld ?? '',
       tags: Array.isArray(initial.tags) ? initial.tags : [],
       images: Array.isArray(initial.images) ? initial.images : [],
@@ -220,6 +222,35 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
             onChange={(e) => setField('name.fr', e.target.value)}
             className={inputCls}
           />
+        </Field>
+        <Field
+          label={t('admin.products.slug')}
+          hint={
+            <>
+              {t('admin.products.slug_hint')}{' '}
+              <span className="text-ink-muted">{`/product/${form.slug || '…'}`}</span>
+            </>
+          }
+        >
+          <div className="flex items-center gap-2">
+            <input
+              type="text"
+              value={form.slug}
+              onChange={(e) => setField('slug', e.target.value)}
+              className={`${inputCls} font-mono text-sm`}
+              placeholder={t('admin.products.slug_placeholder')}
+              spellCheck={false}
+            />
+            <button
+              type="button"
+              onClick={() => setField('slug', '')}
+              disabled={!form.slug}
+              title={t('admin.products.slug_reset')}
+              className="text-[11px] uppercase tracking-wider-1 text-ink-muted hover:text-ink disabled:opacity-40 disabled:hover:text-ink-muted whitespace-nowrap shrink-0"
+            >
+              {t('admin.products.slug_reset')}
+            </button>
+          </div>
         </Field>
         <Field label={t('admin.products.description_fr')}>
           <textarea
