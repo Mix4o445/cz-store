@@ -13,6 +13,16 @@ export function useProductList(params = {}) {
   });
 }
 
+export function usePopularProducts(limit = 8) {
+  return useQuery({
+    queryKey: ['products', 'popular', limit],
+    queryFn: async () => {
+      const res = await productsApi.list({ popular: true, limit, sort: '-updatedAt' });
+      return res.data?.items ?? [];
+    },
+  });
+}
+
 export function useFeaturedProducts() {
   return useQuery({
     queryKey: ['products', 'featured'],

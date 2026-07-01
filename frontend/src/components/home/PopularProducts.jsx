@@ -1,31 +1,66 @@
-import { useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
 import { ArrowUpRight, ChevronLeft, ChevronRight, Loader2 } from 'lucide-react';
 import ProductCard from '../product/ProductCard';
 import Reveal from '@/components/common/Reveal';
-import { useProductList } from '@/hooks/useProducts';
+import { usePopularProducts } from '@/hooks/useProducts';
 import { getApiErrorMessage } from '@/hooks/useAuth';
+
+const AUTOPLAY_MS = 4000;
+const RESUME_AFTER_INTERACTION_MS = 6000;
 
 export default function PopularProducts() {
   const { t } = useTranslation();
-  // Popular = best-rated products. Cap the preview at 6 on the home page.
-  const { data, isLoading, isError, error, refetch } = useProductList({
-    sort: '-rating',
-    limit: 6,
-  });
-  const products = (data?.items ?? []).slice(0, 6);
-
+  const { data: products = [], isLoading, isError, error, refetch } = usePopularProducts(8);
   const trackRef = useRef(null);
+  const [paused, setPaused] = useState(false);
+  const resumeTimer = useRef(null);
 
   const scrollByCards = (dir) => {
     const el = trackRef.current;
     if (!el) return;
-    // Scroll by roughly one card width (first child) including the gap.
     const card = el.querySelector('[data-slide]');
     const amount = card ? card.offsetWidth + 20 : el.clientWidth * 0.8;
     el.scrollBy({ left: dir * amount, behavior: 'smooth' });
   };
+
+  // Pause autoplay for a short window after any manual interaction so the
+  // carousel doesn't fight the user.
+  const pauseBriefly = () => {
+    setPaused(true);
+    if (resumeTimer.current) clearTimeout(resumeTimer.current);
+    resumeTimer.current = setTimeout(() => setPaused(false), RESUME_AFTER_INTERACTION_MS);
+  };
+
+  useEffect(() => {
+    if (paused || products.length < 2) return undefined;
+    if (typeof window === 'undefined') return undefined;
+    const mq = window.matchMedia('(prefers-reduced-motion: reduce)');
+    if (mq.matches) return undefined;
+
+    const id = setInterval(() => {
+      const el = trackRef.current;
+      if (!el) return;
+      const card = el.querySelector('[data-slide]');
+      const amount = card ? card.offsetWidth + 20 : el.clientWidth * 0.8;
+      // Loop back to the start when we get close to the end so the rotation
+      // is seamless instead of just stopping.
+      if (el.scrollLeft + el.clientWidth >= el.scrollWidth - 4) {
+        el.scrollTo({ left: 0, behavior: 'smooth' });
+      } else {
+        el.scrollBy({ left: amount, behavior: 'smooth' });
+      }
+    }, AUTOPLAY_MS);
+
+    return () => clearInterval(id);
+  }, [paused, products.length]);
+
+  useEffect(() => {
+    return () => {
+      if (resumeTimer.current) clearTimeout(resumeTimer.current);
+    };
+  }, []);
 
   return (
     <section className="section">
@@ -42,7 +77,10 @@ export default function PopularProducts() {
             <div className="hidden md:flex items-center gap-2">
               <button
                 type="button"
-                onClick={() => scrollByCards(-1)}
+                onClick={() => {
+                  pauseBriefly();
+                  scrollByCards(-1);
+                }}
                 aria-label={t('common.back')}
                 className="grid place-items-center w-10 h-10 rounded-full border border-line text-ink hover:border-ink transition-colors"
               >
@@ -50,7 +88,10 @@ export default function PopularProducts() {
               </button>
               <button
                 type="button"
-                onClick={() => scrollByCards(1)}
+                onClick={() => {
+                  pauseBriefly();
+                  scrollByCards(1);
+                }}
                 aria-label={t('common.more')}
                 className="grid place-items-center w-10 h-10 rounded-full border border-line text-ink hover:border-ink transition-colors"
               >
@@ -79,6 +120,11 @@ export default function PopularProducts() {
           <>
             <div
               ref={trackRef}
+              onMouseEnter={() => setPaused(true)}
+              onMouseLeave={() => setPaused(false)}
+              onTouchStart={pauseBriefly}
+              onWheel={pauseBriefly}
+              onPointerDown={pauseBriefly}
               className="flex gap-5 overflow-x-auto no-scrollbar snap-x snap-mandatory -mx-4 px-4 md:mx-0 md:px-0 pb-2"
             >
               {products.map((p) => (

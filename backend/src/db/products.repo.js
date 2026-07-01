@@ -10,6 +10,7 @@ function applyFilters(query, filter = {}) {
   if (filter.tag) query = query.contains('tags', [filter.tag]);
   if (filter.isPromo) query = query.eq('is_promo', true);
   if (filter.isFeatured) query = query.eq('is_featured', true);
+  if (filter.isPopular) query = query.eq('is_popular', true);
   if (filter.minPrice != null) query = query.gte('price', filter.minPrice);
   if (filter.maxPrice != null) query = query.lte('price', filter.maxPrice);
   if (filter.q) {

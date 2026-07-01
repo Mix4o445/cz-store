@@ -18,6 +18,7 @@ const EMPTY = {
   stock: 0,
   isPromo: false,
   isFeatured: false,
+  isPopular: false,
   tags: [],
   images: [],
   variants: [],
@@ -139,6 +140,7 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
       ...form,
       isPromo: asBool(form.isPromo),
       isFeatured: asBool(form.isFeatured),
+      isPopular: asBool(form.isPopular),
       specs: {
         ...form.specs,
         inverter: asBool(form.specs?.inverter),
@@ -326,6 +328,15 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
               className="accent-ink w-4 h-4"
             />
             {t('admin.products.is_featured')}
+          </label>
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={asBool(form.isPopular)}
+              onChange={(e) => setField('isPopular', e.target.checked)}
+              className="accent-ink w-4 h-4"
+            />
+            {t('admin.products.is_popular')}
           </label>
         </div>
       </section>

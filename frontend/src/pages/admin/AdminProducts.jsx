@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Loader2, Plus, Pencil, Trash2, Copy } from 'lucide-react';
+import { Loader2, Plus, Pencil, Trash2, Copy, Star } from 'lucide-react';
 import { useProductList } from '@/hooks/useProducts';
-import { useDeleteProduct, useDuplicateProduct } from '@/hooks/useAdmin';
+import { useDeleteProduct, useDuplicateProduct, useUpdateProduct } from '@/hooks/useAdmin';
 import { getApiErrorMessage } from '@/hooks/useAuth';
 import { formatPrice } from '@/utils/formatPrice';
 import AdminProductForm from './AdminProductForm';
@@ -12,8 +12,18 @@ export default function AdminProducts() {
   const { data, isLoading, isError, error, refetch } = useProductList({ limit: 100 });
   const remove = useDeleteProduct();
   const duplicate = useDuplicateProduct();
+  const update = useUpdateProduct();
   const [editing, setEditing] = useState(null); // null | 'new' | product
   const [duplicatingId, setDuplicatingId] = useState(null);
+  const [togglingId, setTogglingId] = useState(null);
+
+  const togglePopular = (p) => {
+    setTogglingId(p._id);
+    update.mutate(
+      { id: p._id, isPopular: !p.isPopular },
+      { onSettled: () => setTogglingId(null) }
+    );
+  };
 
   const products = data?.items ?? [];
 
@@ -76,6 +86,7 @@ export default function AdminProducts() {
                     <th className="text-end font-medium py-3">{t('admin.products.price')}</th>
                     <th className="text-end font-medium py-3">{t('admin.products.stock')}</th>
                     <th className="text-start font-medium py-3">{t('admin.products.tags')}</th>
+                    <th className="text-center font-medium py-3">{t('admin.products.is_popular')}</th>
                     <th className="py-3 text-end pe-6 md:pe-0"></th>
                   </tr>
                 </thead>
@@ -113,6 +124,39 @@ export default function AdminProducts() {
                         ) : (
                           <span className="text-ink-muted">—</span>
                         )}
+                      </td>
+                      <td className="py-3 pe-3 text-center">
+                        <button
+                          type="button"
+                          onClick={() => togglePopular(p)}
+                          disabled={togglingId === p._id}
+                          title={
+                            p.isPopular
+                              ? t('admin.products.unmark_popular')
+                              : t('admin.products.mark_popular')
+                          }
+                          aria-label={
+                            p.isPopular
+                              ? t('admin.products.unmark_popular')
+                              : t('admin.products.mark_popular')
+                          }
+                          aria-pressed={!!p.isPopular}
+                          className={`inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors disabled:opacity-50 ${
+                            p.isPopular
+                              ? 'bg-ink text-paper hover:bg-primary'
+                              : 'text-ink-muted hover:text-ink hover:bg-ink/5'
+                          }`}
+                        >
+                          {togglingId === p._id ? (
+                            <Loader2 size={13} className="animate-spin" />
+                          ) : (
+                            <Star
+                              size={14}
+                              strokeWidth={1.5}
+                              className={p.isPopular ? 'fill-current' : ''}
+                            />
+                          )}
+                        </button>
                       </td>
                       <td className="py-3 pe-6 md:pe-0 text-end">
                         <div className="inline-flex items-center gap-1">
