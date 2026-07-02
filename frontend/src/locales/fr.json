@@ -195,7 +195,8 @@
     "phone_label": "+212 663-820045",
     "city_label": "Casablanca, Maroc",
     "success_title": "Message envoyé.",
-    "success_sub": "Nous vous répondons sous 24h. Vous recevrez aussi un email de confirmation."
+    "success_sub": "Nous vous répondons sous 24h. Vous recevrez aussi un email de confirmation.",
+    "whatsapp_cta": "Discuter sur WhatsApp"
   },
   "about": {
     "eyebrow": "À propos",
