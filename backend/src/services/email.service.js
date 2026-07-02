@@ -54,7 +54,7 @@ async function getTransporter() {
   return transporter;
 }
 
-async function sendMail({ to, subject, html, text }) {
+async function sendMail({ to, subject, html, text, replyTo }) {
   const t = await getTransporter();
   if (!t) {
     console.log(`[email] (mock) to=${to} subject=${subject}`);
@@ -64,6 +64,7 @@ async function sendMail({ to, subject, html, text }) {
     const info = await t.sendMail({
       from: env.smtp.from,
       to,
+      replyTo,
       subject,
       html,
       text: text ?? html.replace(/<[^>]+>/g, ' ').replace(/\s+/g, ' ').trim(),
@@ -137,7 +138,7 @@ function shellLayout({ title, body, preheader = '' }) {
         ${body}
         <tr>
           <td style="padding:24px 32px;background:${PALETTE.ink};color:rgba(255,255,255,0.5);font-size:11px;letter-spacing:0.06em;">
-            CoolZone · Casablanca, Maroc · contact@coolzone.ma · +212 600 000 000
+            CoolZone · Casablanca, Maroc · contact@coolzone.ma · +212 663-820045
           </td>
         </tr>
       </table>
@@ -412,4 +413,100 @@ export async function sendOrderStatusEmails(order, status) {
 
   // Run in parallel; surface errors but don't block.
   await Promise.allSettled(tasks);
+}
+
+
+// ---------------------------------------------------------------------------
+// Contact form (public — site visitors write to contact@coolzone.ma)
+// ---------------------------------------------------------------------------
+
+function escapeHtml(str = '') {
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function contactAdminHtml({ name, email, message }) {
+  const body = `
+    <tr><td style="padding:32px;">
+      <p style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:${PALETTE.muted};margin:0 0 12px;">Nouveau message</p>
+      <h1 style="font-family:'Space Grotesk',Arial,sans-serif;margin:0 0 16px;font-size:26px;letter-spacing:-0.02em;">Message du site web</h1>
+      <table width="100%" style="border-collapse:collapse;font-size:14px;margin-bottom:24px;">
+        <tr>
+          <td style="padding:8px 0;color:${PALETTE.muted};width:120px;vertical-align:top;">Nom</td>
+          <td style="padding:8px 0;"><strong>${escapeHtml(name)}</strong></td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;color:${PALETTE.muted};vertical-align:top;">Email</td>
+          <td style="padding:8px 0;">
+            <a href="mailto:${escapeHtml(email)}" style="color:${PALETTE.ink};">${escapeHtml(email)}</a>
+          </td>
+        </tr>
+        <tr>
+          <td style="padding:8px 0;color:${PALETTE.muted};vertical-align:top;">Reçu le</td>
+          <td style="padding:8px 0;">${fmtDate(new Date())}</td>
+        </tr>
+      </table>
+      <div style="padding:20px;background:${PALETTE.chrome};border-left:3px solid ${PALETTE.ink};font-size:15px;line-height:1.6;white-space:pre-wrap;word-wrap:break-word;">${escapeHtml(message)}</div>
+      <a href="mailto:${escapeHtml(email)}?subject=Re:%20votre%20message%20CoolZone" style="display:inline-block;margin-top:24px;background:${PALETTE.ink};color:${PALETTE.paper};text-decoration:none;padding:12px 24px;border-radius:999px;font-weight:600;font-size:14px;">Répondre à ${escapeHtml(name.split(' ')[0])}</a>
+    </td></tr>`;
+  return shellLayout({
+    title: `Message de ${name}`,
+    preheader: `${name} · ${email}`,
+    body,
+  });
+}
+
+function contactAutoReplyHtml({ name }) {
+  const firstName = name.split(/\s+/)[0] || name;
+  const body = `
+    <tr><td style="padding:32px;">
+      <p style="font-size:11px;letter-spacing:0.14em;text-transform:uppercase;color:${PALETTE.muted};margin:0 0 12px;">CoolZone</p>
+      <h1 style="font-family:'Space Grotesk',Arial,sans-serif;margin:0 0 16px;font-size:26px;letter-spacing:-0.02em;">Merci, ${escapeHtml(firstName)}.</h1>
+      <p style="margin:0 0 16px;color:${PALETTE.ink};font-size:15px;line-height:1.6;">Nous avons bien reçu votre message. Notre équipe vous répondra sous 24 heures, du lundi au samedi.</p>
+      <p style="margin:0 0 24px;color:${PALETTE.muted};font-size:14px;line-height:1.6;">Pour toute urgence, vous pouvez nous joindre au <strong>+212 663-820045</strong> ou par WhatsApp via le bouton sur notre site.</p>
+      <p style="margin:0;font-size:14px;color:${PALETTE.muted};">— L'équipe CoolZone</p>
+    </td></tr>`;
+  return shellLayout({
+    title: 'Nous avons reçu votre message',
+    preheader: 'Nous vous répondons sous 24h.',
+    body,
+  });
+}
+
+export async function sendContactEmails({ name, email, message }) {
+  const tasks = [];
+
+  if (env.adminEmail) {
+    tasks.push(
+      sendMail({
+        to: env.adminEmail,
+        subject: `Message de ${name} — site CoolZone`,
+        html: contactAdminHtml({ name, email, message }),
+        replyTo: email,
+      })
+    );
+  }
+
+  // Send a confirmation to the visitor. Reply-To is the contact@ email so
+  // the user can just hit "Reply" to reach the team.
+  tasks.push(
+    sendMail({
+      to: email,
+      subject: 'Nous avons bien reçu votre message — CoolZone',
+      html: contactAutoReplyHtml({ name }),
+      replyTo: env.adminEmail || undefined,
+    })
+  );
+
+  const results = await Promise.allSettled(tasks);
+  const anyOk = results.some((r) => r.status === 'fulfilled' && r.value);
+  if (!anyOk) {
+    const err = new Error('Failed to send any contact email');
+    err.statusCode = 503;
+    throw err;
+  }
 }

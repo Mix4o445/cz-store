@@ -11,3 +11,5 @@ export const unauthorized = (msg = 'Unauthorized') => new ApiError(401, msg);
 export const forbidden = (msg = 'Forbidden') => new ApiError(403, msg);
 export const notFound = (msg = 'Not found') => new ApiError(404, msg);
 export const conflict = (msg = 'Conflict') => new ApiError(409, msg);
+export const serviceUnavailable = (msg = 'Service unavailable') =>
+  new ApiError(503, msg);

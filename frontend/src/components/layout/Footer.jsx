@@ -81,7 +81,7 @@ export default function Footer() {
               {t('footer.support')}
             </h4>
             <ul className="space-y-2.5 text-sm text-paper/80">
-              <li>+212 600 000 000</li>
+              <li>+212 663-820045</li>
               <li>contact@coolzone.ma</li>
               <li>Casablanca, Maroc</li>
             </ul>

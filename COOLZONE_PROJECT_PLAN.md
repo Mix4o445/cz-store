@@ -642,7 +642,7 @@ CLIENT_URL=https://coolzone.ma
 ```env
 VITE_API_URL=http://localhost:5000/api
 VITE_CLOUDINARY_URL=https://res.cloudinary.com/...
-VITE_WHATSAPP_NUMBER=+212600000000
+VITE_WHATSAPP_NUMBER=+212663820045
 ```
 
 ---

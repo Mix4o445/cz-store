@@ -1,5 +1,5 @@
 export default function WhatsAppFab() {
-  const number = (import.meta.env.VITE_WHATSAPP_NUMBER || '+212600000000').replace(/[^\d]/g, '');
+  const number = (import.meta.env.VITE_WHATSAPP_NUMBER || '+212663820045').replace(/[^\d]/g, '');
   return (
     <a
       href={`https://wa.me/${number}`}

@@ -192,8 +192,10 @@
     "email": "Email",
     "message": "Message",
     "send": "Envoyer",
-    "phone_label": "+212 600 000 000",
-    "city_label": "Casablanca, Maroc"
+    "phone_label": "+212 663-820045",
+    "city_label": "Casablanca, Maroc",
+    "success_title": "Message envoyé.",
+    "success_sub": "Nous vous répondons sous 24h. Vous recevrez aussi un email de confirmation."
   },
   "about": {
     "eyebrow": "À propos",
