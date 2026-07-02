@@ -36,9 +36,9 @@ const EMPTY = {
   },
 };
 
-function Field({ label, hint, children }) {
+function Field({ label, hint, children, className = '' }) {
   return (
-    <label className="block">
+    <label className={`block ${className}`}>
       <span className="text-[11px] uppercase tracking-wider-2 text-ink-muted">{label}</span>
       <div className="mt-2">{children}</div>
       {hint && <span className="block mt-1 text-[11px] text-ink-muted">{hint}</span>}
@@ -212,8 +212,8 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
         </button>
       </header>
 
-      <section className="grid sm:grid-cols-2 gap-6">
-        <Field label={t('admin.products.name_fr')}>
+      <section className="grid sm:grid-cols-2 lg:grid-cols-6 gap-6">
+        <Field label={t('admin.products.name_fr')} className="lg:col-span-3">
           <input
             type="text"
             required
@@ -225,6 +225,7 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
         </Field>
         <Field
           label={t('admin.products.slug')}
+          className="lg:col-span-3"
           hint={
             <>
               {t('admin.products.slug_hint')}{' '}
@@ -252,7 +253,10 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
             </button>
           </div>
         </Field>
-        <Field label={t('admin.products.description_fr')}>
+        <Field
+          label={t('admin.products.description_fr')}
+          className="sm:col-span-2 lg:col-span-6 relative w-full static"
+        >
           <textarea
             rows={3}
             value={form.description.fr}
