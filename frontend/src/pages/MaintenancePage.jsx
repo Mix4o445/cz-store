@@ -1,6 +1,7 @@
-import { Construction, RefreshCw } from 'lucide-react';
+import { RefreshCw } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useMaintenance } from '@/hooks/useSettings';
+import Logo from '@/components/common/Logo';
 
 export default function MaintenancePage() {
   const { t } = useTranslation();
@@ -10,30 +11,11 @@ export default function MaintenancePage() {
   return (
     <div className="min-h-screen bg-paper flex flex-col">
       <header className="container-app py-6 flex items-center justify-between">
-        <span className="font-display text-lg font-medium tracking-tight">
-          CoolZone
-        </span>
-        <a
-          href="/admin"
-          className="text-[11px] uppercase tracking-wider-1 text-ink-muted hover:text-ink"
-        >
-          {t('maintenance.admin_link')}
-        </a>
+        <Logo className="h-9 md:h-10" />
       </header>
 
       <main className="flex-1 grid place-items-center px-5">
         <div className="max-w-xl text-center space-y-8">
-          <div className="grid place-items-center">
-            <div className="relative">
-              <span className="absolute inset-0 grid place-items-center">
-                <span className="block w-24 h-24 rounded-full bg-ink/5 animate-ping" />
-              </span>
-              <span className="relative grid place-items-center w-20 h-20 rounded-full bg-ink text-paper">
-                <Construction size={28} strokeWidth={1.4} />
-              </span>
-            </div>
-          </div>
-
           <p className="eyebrow justify-center">{t('maintenance.eyebrow')}</p>
           <h1 className="font-display font-medium text-display-sm md:text-display-md">
             {t('maintenance.title')}
