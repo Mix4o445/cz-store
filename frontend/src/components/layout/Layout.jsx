@@ -6,6 +6,7 @@ import BottomTabBar from './BottomTabBar';
 import WhatsAppFab from '../common/WhatsAppFab';
 import ScrollToTop from '../common/ScrollToTop';
 import CartToast from '../common/CartToast';
+import SplashScreen from '../common/SplashScreen';
 import { useRTL } from '@/hooks/useRTL';
 
 export default function Layout() {
@@ -15,6 +16,7 @@ export default function Layout() {
   return (
     <div className="flex min-h-screen flex-col">
       <ScrollToTop />
+      <SplashScreen />
       <Navbar />
       <CartToast />
       <main className="flex-1 pb-20 md:pb-0">
