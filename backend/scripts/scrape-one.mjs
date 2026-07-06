@@ -2,13 +2,15 @@
 // Scrape a single mtclim.ma product page and print (or save) the result.
 //
 // Usage:
-//   node scripts/scrape-one.js <url>                 # print JSON to stdout
-//   node scripts/scrape-one.js <url> --save <file>  # also write to <file>
-//   node scripts/scrape-one.js <url> --import       # push to Supabase
+//   node scripts/scrape-one.mjs <url>                 # print JSON to stdout
+//   node scripts/scrape-one.mjs <url> --save <file>  # also write to <file>
+//   node scripts/scrape-one.mjs <url> --import       # push to Supabase
+//   node scripts/scrape-one.mjs <url> --no-mirror    # skip image re-hosting
 //
-// The shape of the output is the same as a CoolZone Product document, so
-// you can pipe the result straight into a `create product` request or a
-// JSON file that you can `INSERT` into Supabase.
+// By default the scraper downloads every image on the page and re-uploads
+// it to our own Cloudinary bucket, so the JSON output already points at
+// our CDN instead of mtclim.ma. Pass --no-mirror to keep the original
+// remote URLs (useful for debugging).
 
 import { writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
@@ -16,24 +18,32 @@ import { config as loadEnv } from 'dotenv';
 import { createClient } from '@supabase/supabase-js';
 import { productToRow, makeProductSlug } from '../src/db/map.js';
 import { scrapeOneProduct } from './lib/mtclim-scraper.mjs';
+import { mirrorImages } from '../src/services/image.service.js';
 
 loadEnv();
 
 const url = process.argv[2];
 if (!url) {
-  console.error('Usage: node scripts/scrape-one.js <url> [--save <file>] [--import]');
+  console.error(
+    'Usage: node scripts/scrape-one.mjs <url> [--save <file>] [--import] [--no-mirror]'
+  );
   process.exit(1);
 }
 
 const saveIdx = process.argv.indexOf('--save');
 const savePath = saveIdx > -1 ? process.argv[saveIdx + 1] : null;
 const doImport = process.argv.includes('--import');
+const noMirror = process.argv.includes('--no-mirror');
 
 const result = await scrapeOneProduct(url);
-
 if (!result.ok) {
   console.error(JSON.stringify(result, null, 2));
   process.exit(2);
+}
+
+if (!noMirror && result.product.images?.length) {
+  console.error(`[scrape-one] mirroring ${result.product.images.length} image(s)…`);
+  result.product.images = await mirrorImages(result.product.images);
 }
 
 console.log(JSON.stringify(result.product, null, 2));
@@ -66,3 +76,4 @@ if (doImport) {
   }
   console.error(`\n[scrape-one] inserted product id=${data.id} slug=${data.slug}`);
 }
+
