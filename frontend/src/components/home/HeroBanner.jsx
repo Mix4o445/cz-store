@@ -45,15 +45,6 @@ export default function HeroBanner() {
 
       <div className="container-app pt-16 md:pt-24 pb-20 md:pb-28 relative">
         <div className="max-w-3xl relative z-10">
-          <motion.p
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            className="eyebrow mb-8 !text-paper/70 before:!bg-paper/40"
-          >
-            {t('home.hero_eyebrow')}
-          </motion.p>
-
           <h1 className="font-display font-medium text-display-lg lg:text-display-xl">
             <motion.span
               variants={fadeUp}
@@ -106,16 +97,6 @@ export default function HeroBanner() {
               {t('home.hero_cta_secondary')}
             </Link>
           </motion.div>
-
-          <motion.p
-            variants={fadeUp}
-            initial="hidden"
-            animate="show"
-            custom={5}
-            className="mt-12 text-[11px] uppercase tracking-wider-2 text-paper/60 font-medium"
-          >
-            {t('home.hero_strip')}
-          </motion.p>
         </div>
       </div>
 
