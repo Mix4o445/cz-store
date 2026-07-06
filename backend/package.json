@@ -19,7 +19,8 @@
     "scrape:products": "node scripts/scrape-products.js",
     "scrape:products:dry": "node scripts/scrape-products.js --dry-run",
     "scrape:products:force": "node scripts/scrape-products.js --force",
-    "scrape:products:cat": "node scripts/scrape-products.js --category"
+    "scrape:products:cat": "node scripts/scrape-products.js --category",
+    "scrape:one": "node scripts/scrape-one.mjs"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.108.2",
