@@ -329,11 +329,13 @@ export default function ProductPage() {
                       <span className="block">{v.capacity}</span>
                       <span
                         className={clsx(
-                          'block text-[10px] mt-0.5 num',
+                          'block text-[10px] mt-0.5',
                           active ? 'text-paper/70' : 'text-ink-muted'
                         )}
                       >
-                        {formatPrice(v.price)}
+                        {product.contactOnly
+                          ? t('product.on_request')
+                          : formatPrice(v.price)}
                       </span>
                     </button>
                   );
