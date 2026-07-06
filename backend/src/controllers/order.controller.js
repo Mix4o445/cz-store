@@ -40,6 +40,19 @@ export async function createOrder(req, res, next) {
     if (parsed.data.items.some((line) => !byId.has(line.product))) {
       throw badRequest('Some products not found');
     }
+    // Belt-and-braces: never accept an order for a contactOnly product
+    // (price-on-request) or for a private (hidden) one. Frontend guards
+    // already block these, but a stale cart / direct API hit shouldn't slip
+    // through.
+    const blocked = parsed.data.items.find((line) => {
+      const p = byId.get(line.product);
+      return p?.contactOnly || p?.isPrivate;
+    });
+    if (blocked) {
+      throw badRequest(
+        `Product ${blocked.product} is not available for online checkout`
+      );
+    }
 
     const enriched = parsed.data.items.map((line) => {
       const p = byId.get(line.product);

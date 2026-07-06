@@ -1,17 +1,25 @@
 import { Link } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
+import { AlertTriangle, Minus, Plus, ShoppingBag, Trash2 } from 'lucide-react';
+import clsx from 'clsx';
 import { useCartStore } from '@/store/cartStore';
 import { useEnrichedCart } from '@/hooks/useEnrichedCart';
 import { useLocalized } from '@/hooks/useLocalized';
 import { formatPrice } from '@/utils/formatPrice';
 import SEO from '@/components/common/SEO';
+import WhatsAppContactButton from '@/components/common/WhatsAppContactButton';
 
 export default function CartPage() {
   const { t } = useTranslation();
   const local = useLocalized();
   const { items, updateQty, removeItem } = useCartStore();
   const { items: enriched, subtotal } = useEnrichedCart();
+
+  // Items that became contactOnly after being added (or that pre-existed
+  // in localStorage from before the flag existed). They can't be checked
+  // out, so we surface a notice + WhatsApp CTA per item.
+  const contactOnlyItems = enriched.filter((i) => i.contactOnly);
+  const checkoutableItems = enriched.filter((i) => !i.contactOnly);
 
   if (items.length === 0) {
     return (
@@ -52,21 +60,43 @@ export default function CartPage() {
                     </p>
                   )}
                 </div>
-                <div className="flex items-center justify-between gap-3 mt-auto">
-                  <div className="inline-flex items-center border border-line rounded-full">
-                    <button onClick={() => updateQty(item.id, item.qty - 1)} className="px-3 py-1.5 hover:bg-chrome rounded-full" aria-label="-">
-                      <Minus size={13} />
-                    </button>
-                    <span className="px-3 text-sm num">{item.qty}</span>
-                    <button onClick={() => updateQty(item.id, item.qty + 1)} className="px-3 py-1.5 hover:bg-chrome rounded-full" aria-label="+">
-                      <Plus size={13} />
+
+                {item.contactOnly ? (
+                  <div className="rounded-xl border border-[#25D366]/40 bg-[#25D366]/5 p-3 space-y-2">
+                    <div className="flex items-center gap-2 text-[#1a7a3f] text-xs font-medium">
+                      <AlertTriangle size={13} strokeWidth={1.8} />
+                      {t('cart.contact_only_in_cart')}
+                    </div>
+                    <p className="text-xs text-ink-muted leading-relaxed">
+                      {t('cart.contact_only_hint')}
+                    </p>
+                    <div className="flex items-center gap-2 pt-1">
+                      <WhatsAppContactButton product={item} size="sm" />
+                      <button
+                        onClick={() => removeItem(item.id)}
+                        className="text-[11px] uppercase tracking-wider-1 text-ink-muted hover:text-signal"
+                      >
+                        {t('cart.remove')}
+                      </button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between gap-3 mt-auto">
+                    <div className="inline-flex items-center border border-line rounded-full">
+                      <button onClick={() => updateQty(item.id, item.qty - 1)} className="px-3 py-1.5 hover:bg-chrome rounded-full" aria-label="-">
+                        <Minus size={13} />
+                      </button>
+                      <span className="px-3 text-sm num">{item.qty}</span>
+                      <button onClick={() => updateQty(item.id, item.qty + 1)} className="px-3 py-1.5 hover:bg-chrome rounded-full" aria-label="+">
+                        <Plus size={13} />
+                      </button>
+                    </div>
+                    <span className="price">{formatPrice((item.price ?? 0) * item.qty)}</span>
+                    <button onClick={() => removeItem(item.id)} className="p-2 text-ink-muted hover:text-signal" aria-label={t('cart.remove')}>
+                      <Trash2 size={15} strokeWidth={1.4} />
                     </button>
                   </div>
-                  <span className="price">{formatPrice((item.price ?? 0) * item.qty)}</span>
-                  <button onClick={() => removeItem(item.id)} className="p-2 text-ink-muted hover:text-signal" aria-label={t('cart.remove')}>
-                    <Trash2 size={15} strokeWidth={1.4} />
-                  </button>
-                </div>
+                )}
               </div>
             </li>
           ))}
@@ -89,7 +119,18 @@ export default function CartPage() {
             <dd className="price">{formatPrice(subtotal)}</dd>
           </div>
         </dl>
-        <Link to="/checkout" className="btn-primary w-full">{t('cart.checkout')}</Link>
+        {contactOnlyItems.length > 0 ? (
+          <button
+            type="button"
+            disabled
+            className="btn-primary w-full opacity-50 cursor-not-allowed"
+            title={t('cart.checkout_blocked_hint')}
+          >
+            {t('cart.checkout')}
+          </button>
+        ) : (
+          <Link to="/checkout" className="btn-primary w-full">{t('cart.checkout')}</Link>
+        )}
         <Link to="/shop" className="btn-ghost w-full text-xs">{t('cart.continue')}</Link>
       </aside>
     </section>
