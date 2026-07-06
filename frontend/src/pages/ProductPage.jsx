@@ -248,14 +248,9 @@ export default function ProductPage() {
           </a>
 
         {product.contactOnly ? (
-          <div className="space-y-2">
-            <p className="text-[11px] uppercase tracking-wider-2 text-ink-muted">
-              {t('product.price_on_request')}
-            </p>
-            <div className="max-w-md">
-              <WhatsAppContactButton product={product} size="lg" fullWidth />
-            </div>
-          </div>
+          <p className="text-[11px] uppercase tracking-wider-2 text-ink-muted">
+            {t('product.price_on_request')}
+          </p>
         ) : (
           <>
             <div className="flex items-baseline gap-3">
