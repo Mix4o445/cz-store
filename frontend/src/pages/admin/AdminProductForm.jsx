@@ -20,6 +20,8 @@ const EMPTY = {
   isPromo: false,
   isFeatured: false,
   isPopular: false,
+  isPrivate: false,
+  contactOnly: false,
   tags: [],
   images: [],
   variants: [],
@@ -143,6 +145,8 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
       isPromo: asBool(form.isPromo),
       isFeatured: asBool(form.isFeatured),
       isPopular: asBool(form.isPopular),
+      isPrivate: asBool(form.isPrivate),
+      contactOnly: asBool(form.contactOnly),
       specs: {
         ...form.specs,
         inverter: asBool(form.specs?.inverter),
@@ -372,6 +376,24 @@ export default function AdminProductForm({ initial, onCancel, onSaved }) {
               className="accent-ink w-4 h-4"
             />
             {t('admin.products.is_popular')}
+          </label>
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={asBool(form.contactOnly)}
+              onChange={(e) => setField('contactOnly', e.target.checked)}
+              className="accent-ink w-4 h-4"
+            />
+            {t('admin.products.contact_only')}
+          </label>
+          <label className="inline-flex items-center gap-2 text-sm">
+            <input
+              type="checkbox"
+              checked={asBool(form.isPrivate)}
+              onChange={(e) => setField('isPrivate', e.target.checked)}
+              className="accent-ink w-4 h-4"
+            />
+            {t('admin.products.is_private')}
           </label>
         </div>
       </section>

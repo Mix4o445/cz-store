@@ -71,6 +71,8 @@ export function mapProduct(row) {
     isPromo: !!row.is_promo,
     isFeatured: !!row.is_featured,
     isPopular: !!row.is_popular,
+    isPrivate: !!row.is_private,
+    contactOnly: !!row.contact_only,
     tags: Array.isArray(row.tags) ? row.tags : row.tags ? [row.tags] : [],
     deliveryFee: num(row.delivery_fee) ?? 0,
     variants: Array.isArray(row.variants) ? row.variants : [],
@@ -134,6 +136,8 @@ export function productToRow(d = {}) {
   if (d.isPromo !== undefined) row.is_promo = d.isPromo;
   if (d.isFeatured !== undefined) row.is_featured = d.isFeatured;
   if (d.isPopular !== undefined) row.is_popular = d.isPopular;
+  if (d.isPrivate !== undefined) row.is_private = d.isPrivate;
+  if (d.contactOnly !== undefined) row.contact_only = d.contactOnly;
   if (d.tags !== undefined) row.tags = d.tags;
   if (d.deliveryFee !== undefined) row.delivery_fee = d.deliveryFee;
   if (d.variants !== undefined) row.variants = ensureIds(d.variants);

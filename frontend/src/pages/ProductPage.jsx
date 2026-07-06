@@ -14,6 +14,7 @@ import RatingStars from '@/components/common/RatingStars';
 import Badge from '@/components/common/Badge';
 import ProductReviews from '@/components/product/ProductReviews';
 import SEO, { absoluteUrl } from '@/components/common/SEO';
+import WhatsAppContactButton from '@/components/common/WhatsAppContactButton';
 
 function ProductPlaceholder() {
   return (
@@ -246,18 +247,31 @@ export default function ProductPage() {
             </span>
           </a>
 
-        <div className="flex items-baseline gap-3">
-          <span className="price text-3xl md:text-4xl">{formatPrice(displayPrice)}</span>
-          {displayPriceOld && (
-            <span className="text-ink-muted line-through">{formatPrice(displayPriceOld)}</span>
-          )}
-        </div>
+        {product.contactOnly ? (
+          <div className="space-y-2">
+            <p className="text-[11px] uppercase tracking-wider-2 text-ink-muted">
+              {t('product.price_on_request')}
+            </p>
+            <div className="max-w-md">
+              <WhatsAppContactButton product={product} size="lg" fullWidth />
+            </div>
+          </div>
+        ) : (
+          <>
+            <div className="flex items-baseline gap-3">
+              <span className="price text-3xl md:text-4xl">{formatPrice(displayPrice)}</span>
+              {displayPriceOld && (
+                <span className="text-ink-muted line-through">{formatPrice(displayPriceOld)}</span>
+              )}
+            </div>
 
-        <p className="text-sm">
-          <Badge tone={displayStock > 0 ? 'soft' : 'signal'}>
-            {displayStock > 0 ? t('product.in_stock') : t('product.out_of_stock')}
-          </Badge>
-        </p>
+            <p className="text-sm">
+              <Badge tone={displayStock > 0 ? 'soft' : 'signal'}>
+                {displayStock > 0 ? t('product.in_stock') : t('product.out_of_stock')}
+              </Badge>
+            </p>
+          </>
+        )}
 
         {/* Capacity / variant selector */}
         {hasVariants && (
@@ -371,13 +385,17 @@ export default function ProductPage() {
         </ul>
 
         <div className="flex flex-wrap gap-3 pt-4">
-          <button
-            onClick={onAddToCart}
-            className="btn-primary flex-1"
-            disabled={displayStock <= 0}
-          >
-            {t('product.add_to_cart')}
-          </button>
+          {product.contactOnly ? (
+            <WhatsAppContactButton product={product} size="lg" className="flex-1" />
+          ) : (
+            <button
+              onClick={onAddToCart}
+              className="btn-primary flex-1"
+              disabled={displayStock <= 0}
+            >
+              {t('product.add_to_cart')}
+            </button>
+          )}
             <button
               onClick={onWishlistClick}
               className="btn-outline w-12 px-0"

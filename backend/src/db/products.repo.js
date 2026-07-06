@@ -11,6 +11,9 @@ function applyFilters(query, filter = {}) {
   if (filter.isPromo) query = query.eq('is_promo', true);
   if (filter.isFeatured) query = query.eq('is_featured', true);
   if (filter.isPopular) query = query.eq('is_popular', true);
+  // Tri-state: omit => don't filter; true => only private; false => only public.
+  if (filter.isPrivate === true) query = query.eq('is_private', true);
+  else if (filter.isPrivate === false) query = query.or('is_private.is.null,is_private.eq.false');
   if (filter.minPrice != null) query = query.gte('price', filter.minPrice);
   if (filter.maxPrice != null) query = query.lte('price', filter.maxPrice);
   if (filter.q) {

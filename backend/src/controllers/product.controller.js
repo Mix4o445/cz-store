@@ -48,6 +48,8 @@ const baseProductShape = {
   isPromo: z.boolean().optional(),
   isFeatured: z.boolean().optional(),
   isPopular: z.boolean().optional(),
+  isPrivate: z.boolean().optional(),
+  contactOnly: z.boolean().optional(),
   slug: z.string().optional().or(z.literal('')),
   tags: z.array(z.string()).optional(),
   deliveryFee: z.number().nonnegative().optional(),
@@ -103,6 +105,10 @@ export async function listProducts(req, res, next) {
     if (promo === '1' || promo === 'true') filter.isPromo = true;
     if (featured === '1' || featured === 'true') filter.isFeatured = true;
     if (popular === '1' || popular === 'true') filter.isPopular = true;
+    // Public storefront never sees private products. Admins can pass
+    // ?includePrivate=1 to see them (used by the admin product list).
+    const includePrivate = req.query.includePrivate === '1' || req.query.includePrivate === 'true';
+    if (!includePrivate) filter.isPrivate = false;
     if (minPrice) filter.minPrice = Number(minPrice);
     if (maxPrice) filter.maxPrice = Number(maxPrice);
     if (q) filter.q = q;
@@ -156,6 +162,7 @@ export async function getBySlug(req, res, next) {
   try {
     const item = await productsRepo.bySlug(req.params.slug);
     if (!item) throw notFound('Product not found');
+    if (item.isPrivate) throw notFound('Product not found');
     return ok(res, item);
   } catch (e) {
     next(e);

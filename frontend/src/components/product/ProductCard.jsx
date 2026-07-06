@@ -6,6 +6,7 @@ import { useWishlistStore } from '@/store/wishlistStore';
 import { useAuthStore } from '@/store/authStore';
 import { useLocalized } from '@/hooks/useLocalized';
 import { useAddToCart } from '@/hooks/useAddToCart';
+import WhatsAppContactButton from '@/components/common/WhatsAppContactButton';
 import { formatPrice } from '@/utils/formatPrice';
 
 export default function ProductCard({ product }) {
@@ -85,10 +86,18 @@ export default function ProductCard({ product }) {
           <Heart size={15} strokeWidth={1.5} className={liked ? 'fill-ink' : ''} />
         </button>
 
-        {/* Quick add - reveals on hover (desktop). For products with variants,
-            send the user to the product page so they can pick a capacity. */}
+        {/* Quick action - reveals on hover (desktop). For products with variants,
+            send the user to the product page so they can pick a capacity.
+            For contactOnly products, show a WhatsApp CTA instead of add-to-cart. */}
         <div className="absolute inset-x-3 bottom-3 opacity-0 translate-y-2 group-hover:opacity-100 group-hover:translate-y-0 transition-all duration-300 hidden md:block">
-          {hasVariants ? (
+          {product.contactOnly ? (
+            <WhatsAppContactButton
+              product={product}
+              size="sm"
+              fullWidth
+              className="!text-xs !uppercase !tracking-wider-1 !py-3"
+            />
+          ) : hasVariants ? (
             <button
               type="button"
               onClick={(e) => {
@@ -129,7 +138,14 @@ export default function ProductCard({ product }) {
           </Link>
         </div>
         <div className="text-end shrink-0">
-          {hasVariants ? (
+          {product.contactOnly ? (
+            <div className="flex flex-col items-end gap-1">
+              <span className="block text-[10px] uppercase tracking-wider-1 text-ink-muted leading-none">
+                {t('product.on_request')}
+              </span>
+              <WhatsAppContactButton product={product} size="sm" />
+            </div>
+          ) : hasVariants ? (
             <>
               <span className="block text-[10px] uppercase tracking-wider-1 text-ink-muted leading-none mb-0.5">
                 {t('product.from')}

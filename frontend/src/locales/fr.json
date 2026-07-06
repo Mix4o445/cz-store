@@ -101,7 +101,11 @@
     "standard": "Standard",
     "not_found": "Produit introuvable",
     "delivery_hint": "Livraison sous 24-72h",
-    "warranty_hint": "Garantie 1 an sur les climatiseurs"
+    "warranty_hint": "Garantie 1 an sur les climatiseurs",
+    "on_request": "Sur devis",
+    "price_on_request": "Prix sur demande",
+    "contact_us": "Contactez-nous",
+    "whatsapp_message": "Bonjour, je suis intéressé(e) par le produit « {{name}} » ({{url}}). Merci de me recontacter avec le meilleur prix et la disponibilité. — CoolZone"
   },
   "maintenance": {
     "eyebrow": "CoolZone",
@@ -460,6 +464,11 @@
       "is_promo": "En promotion",
       "is_featured": "Mis en avant",
       "is_popular": "Populaire",
+      "is_private": "Caché (privé)",
+      "is_private_short": "Privé",
+      "contact_only": "Sur devis (bouton WhatsApp)",
+      "contact_only_short": "Sur devis",
+      "status": "Statut",
       "mark_popular": "Marquer comme populaire",
       "unmark_popular": "Retirer des populaires",
       "copy_id": "Copier l'ID",

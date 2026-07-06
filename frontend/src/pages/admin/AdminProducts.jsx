@@ -11,7 +11,10 @@ const SCRAPED_KEY = 'coolzone-scraped-draft';
 
 export default function AdminProducts() {
   const { t } = useTranslation();
-  const { data, isLoading, isError, error, refetch } = useProductList({ limit: 100 });
+  const { data, isLoading, isError, error, refetch } = useProductList({
+    limit: 100,
+    includePrivate: 1,
+  });
   const remove = useDeleteProduct();
   const duplicate = useDuplicateProduct();
   const update = useUpdateProduct();
@@ -121,6 +124,7 @@ export default function AdminProducts() {
                     <th className="text-end font-medium py-3">{t('admin.products.stock')}</th>
                     <th className="text-start font-medium py-3">{t('admin.products.tags')}</th>
                     <th className="text-center font-medium py-3">{t('admin.products.is_popular')}</th>
+                    <th className="text-center font-medium py-3">{t('admin.products.status')}</th>
                     <th className="py-3 text-end pe-6 md:pe-0"></th>
                   </tr>
                 </thead>
@@ -227,6 +231,26 @@ export default function AdminProducts() {
                             />
                           )}
                         </button>
+                      </td>
+                      <td className="py-3 pe-3 text-center">
+                        <div className="inline-flex flex-col items-center gap-1">
+                          {p.isPrivate && (
+                            <span
+                              title={t('admin.products.is_private')}
+                              className="text-[10px] uppercase tracking-wider-1 px-1.5 py-0.5 bg-ink text-paper rounded-sm font-medium"
+                            >
+                              {t('admin.products.is_private_short')}
+                            </span>
+                          )}
+                          {p.contactOnly && (
+                            <span
+                              title={t('admin.products.contact_only')}
+                              className="text-[10px] uppercase tracking-wider-1 px-1.5 py-0.5 bg-[#25D366] text-white rounded-sm font-medium"
+                            >
+                              {t('admin.products.contact_only_short')}
+                            </span>
+                          )}
+                        </div>
                       </td>
                       <td className="py-3 pe-6 md:pe-0 text-end">
                         <div className="inline-flex items-center gap-1">
