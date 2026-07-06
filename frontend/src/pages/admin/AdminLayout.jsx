@@ -10,6 +10,7 @@ import {
   Sparkles,
   Settings as SettingsIcon,
   ArrowLeft,
+  Globe,
 } from 'lucide-react';
 import clsx from 'clsx';
 import { useAuthStore } from '@/store/authStore';
@@ -23,6 +24,7 @@ const NAV = [
   { to: 'orders', icon: ShoppingCart, key: 'orders' },
   { to: 'users', icon: Users, key: 'users' },
   { to: 'assistant', icon: Sparkles, key: 'assistant' },
+  { to: 'scraper', icon: Globe, key: 'scraper' },
   { to: 'settings', icon: SettingsIcon, key: 'settings' },
 ];
 

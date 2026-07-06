@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Loader2, Plus, Pencil, Trash2, Copy, Star, Link as LinkIcon, Check } from 'lucide-react';
 import { useProductList } from '@/hooks/useProducts';
@@ -7,16 +7,39 @@ import { getApiErrorMessage } from '@/hooks/useAuth';
 import { formatPrice } from '@/utils/formatPrice';
 import AdminProductForm from './AdminProductForm';
 
+const SCRAPED_KEY = 'coolzone-scraped-draft';
+
 export default function AdminProducts() {
   const { t } = useTranslation();
   const { data, isLoading, isError, error, refetch } = useProductList({ limit: 100 });
   const remove = useDeleteProduct();
   const duplicate = useDuplicateProduct();
   const update = useUpdateProduct();
-  const [editing, setEditing] = useState(null); // null | 'new' | product
+  const [editing, setEditing] = useState(null); // null | 'new' | product | scrapedDraft
   const [duplicatingId, setDuplicatingId] = useState(null);
   const [togglingId, setTogglingId] = useState(null);
   const [copiedKey, setCopiedKey] = useState(null);
+
+  // If the scraper page dropped a draft into sessionStorage, open the
+  // product form pre-filled with it. The user can review/edit before save.
+  useEffect(() => {
+    const raw = sessionStorage.getItem(SCRAPED_KEY);
+    if (!raw) return;
+    try {
+      const draft = JSON.parse(raw);
+      if (draft && typeof draft === 'object') {
+        // `isEdit` in the form is driven by `!!initial._id`. Strip any
+        // marker we set on the AdminScraper side so the form treats this
+        // as a brand-new product.
+        const { __scraped, ...rest } = draft;
+        setEditing(rest);
+      }
+    } catch {
+      /* ignore */
+    } finally {
+      sessionStorage.removeItem(SCRAPED_KEY);
+    }
+  }, []);
 
   const togglePopular = (p) => {
     setTogglingId(p._id);

@@ -402,6 +402,7 @@
       "users": "Utilisateurs",
       "assistant": "Assistant IA",
       "settings": "Paramètres",
+      "scraper": "Importer",
       "back": "Retour au site"
     },
     "dashboard": {
@@ -516,6 +517,29 @@
       "status": "Statut",
       "date": "Date",
       "empty": "Aucune commande."
+    },
+    "scraper": {
+      "eyebrow": "Import",
+      "title": "Importer un produit depuis mtclim.ma",
+      "sub": "Collez l'URL d'une fiche produit mtclim.ma pour extraire automatiquement le nom, la marque, le prix, les images, les variantes et la description. Vérifiez, ajustez, puis créez le produit.",
+      "url_label": "URL du produit mtclim.ma",
+      "url_hint": "Doit commencer par https://mtclim.ma/",
+      "scrape": "Analyser",
+      "placeholder": "Collez une URL ci-dessus et cliquez sur Analyser pour voir le résultat.",
+      "preview": "Aperçu",
+      "copy": "Copier JSON",
+      "copied": "Copié",
+      "download": "Télécharger",
+      "use_for_new": "Utiliser pour un nouveau produit",
+      "no_description": "(aucune description)",
+      "field_brand": "Marque",
+      "field_price": "Prix",
+      "field_price_old": "Ancien prix",
+      "field_sku": "Référence",
+      "field_stock": "Stock",
+      "field_category": "Catégorie",
+      "field_variants": "Variantes",
+      "field_description": "Description"
     },
     "settings": {
       "eyebrow": "Paramètres",

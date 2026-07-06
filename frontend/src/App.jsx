@@ -33,6 +33,7 @@ import AdminOrderDetail from './pages/admin/AdminOrderDetail';
 import AdminUsers from './pages/admin/AdminUsers';
 import AdminAssistant from './pages/admin/AdminAssistant';
 import AdminSettings from './pages/admin/AdminSettings';
+import AdminScraper from './pages/admin/AdminScraper';
 
 import RequireAuth from './components/common/RequireAuth';
 import OrderConfirmPage from './pages/OrderConfirmPage';
@@ -92,6 +93,7 @@ export default function App() {
         <Route path="users" element={<AdminUsers />} />
         <Route path="assistant" element={<AdminAssistant />} />
         <Route path="settings" element={<AdminSettings />} />
+        <Route path="scraper" element={<AdminScraper />} />
       </Route>
 
       {/* Storefront — the public Layout is a layout route. Its <Outlet/>
