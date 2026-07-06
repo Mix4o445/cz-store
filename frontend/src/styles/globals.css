@@ -80,6 +80,12 @@
 [dir='rtl'] .ltr-only { display: none; }
 [dir='ltr'] .rtl-only { display: none; }
 
+/* Tailwind override: h-full renders 125% height so the hero video bleeds
+   beyond its section a bit and crops more aggressively. The parent
+   container clips with overflow-hidden, so the extra height is invisible
+   but the framing feels tighter. */
+.h-full { height: 125%; }
+
 /* Marquee */
 @keyframes marquee {
   0%   { transform: translateX(0%); }
