@@ -197,7 +197,7 @@ export default function ShopPage() {
       <SEO
         title={seoTitle}
         description={seoDescription}
-        path={location.pathname + location.search}
+        path="/shop"
         jsonLd={breadcrumbLd}
       />
       <section className="container-app py-12 md:py-16">

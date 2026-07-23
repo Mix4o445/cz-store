@@ -131,6 +131,19 @@ export default function ProductPage() {
   const productUrl = absoluteUrl(`/product/${product.slug}`);
   const productImage = absoluteUrl(images[0] || '/og-cover.png');
   const inStock = (displayStock ?? 0) > 0;
+  const offerLd = !product.contactOnly && Number(displayPrice) > 0
+    ? {
+        '@type': 'Offer',
+        url: productUrl,
+        priceCurrency: 'MAD',
+        price: Number(displayPrice).toFixed(2),
+        availability: inStock
+          ? 'https://schema.org/InStock'
+          : 'https://schema.org/OutOfStock',
+        itemCondition: 'https://schema.org/NewCondition',
+        seller: { '@type': 'Organization', name: 'CoolZone' },
+      }
+    : undefined;
   const productLd = {
     '@context': 'https://schema.org',
     '@type': 'Product',
@@ -140,16 +153,7 @@ export default function ProductPage() {
     sku: currentVariant?._id || product._id,
     brand: product.brand ? { '@type': 'Brand', name: product.brand } : undefined,
     category: product.category ? { '@type': 'Thing', name: product.category } : undefined,
-    offers: {
-      '@type': 'Offer',
-      url: productUrl,
-      priceCurrency: 'MAD',
-      price: Number(displayPrice ?? 0).toFixed(2),
-      availability: inStock
-        ? 'https://schema.org/InStock'
-        : 'https://schema.org/OutOfStock',
-      seller: { '@type': 'Organization', name: 'CoolZone' },
-    },
+    offers: offerLd,
   };
   if (product.rating && product.numReviews) {
     productLd.aggregateRating = {

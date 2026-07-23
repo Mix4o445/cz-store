@@ -1,26 +1,28 @@
 // Build-time sitemap generator. Runs before `vite build` (see the `prebuild`
-// npm script). Fetches every public product, category and brand from the API
-// and writes a fresh `public/sitemap.xml` so crawlers always see the latest
-// URLs.
+// npm script). Fetches every public product from the API and writes a fresh
+// `public/sitemap.xml` so crawlers always see the latest canonical URLs.
 //
 // Configuration (read from .env):
-//   VITE_SITE_URL       — canonical site origin (default https://coolzone.ma)
-//   VITE_API_URL        — backend root (default http://localhost:5050/api)
-//
-// The script is intentionally tolerant: it warns and exits 0 if the API is
-// unreachable, so a build still succeeds when the data layer is down.
+//   VITE_SITE_URL       — canonical site origin
+//   SEO_API_URL         — optional build-only API override
+//   VITE_API_URL        — frontend API root
 
 import { config as loadEnv } from 'dotenv';
 import { writeFileSync, readFileSync, existsSync } from 'node:fs';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import {
+  asList,
+  fetchApi,
+  normalizeSiteUrl,
+  xmlEscape,
+} from './seo-helpers.mjs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT = resolve(__dirname, '..');
 loadEnv({ path: resolve(ROOT, '.env') });
 
-const SITE_URL = (process.env.VITE_SITE_URL || 'https://coolzone.ma').replace(/\/+$/, '');
-const API_URL = (process.env.VITE_API_URL || 'http://localhost:5050/api').replace(/\/+$/, '');
+const SITE_URL = normalizeSiteUrl(process.env.VITE_SITE_URL);
 
 const STATIC_ROUTES = [
   { loc: '/', changefreq: 'daily', priority: '1.0' },
@@ -32,84 +34,58 @@ const STATIC_ROUTES = [
 
 const NOINDEX_PREFIXES = ['/account', '/admin', '/checkout', '/cart', '/login', '/register', '/wishlist'];
 
-function xmlEscape(str = '') {
-  return String(str)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
-    .replace(/'/g, '&apos;');
-}
-
-async function safeFetch(path) {
-  try {
-    const res = await fetch(`${API_URL}${path}`, {
-      headers: { Accept: 'application/json' },
-      signal: AbortSignal.timeout(8000),
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status} for ${path}`);
-    const json = await res.json();
-    return json?.data ?? json ?? [];
-  } catch (err) {
-    console.warn(`[sitemap] ${err.message}`);
-    return null;
-  }
-}
-
-function toUrlEntry(loc, { changefreq = 'weekly', priority = '0.7' } = {}) {
+function toUrlEntry(
+  loc,
+  {
+    changefreq = 'weekly',
+    priority = '0.7',
+    lastmod,
+    images = [],
+  } = {}
+) {
   const url = `${SITE_URL}${loc.startsWith('/') ? loc : `/${loc}`}`;
   return `  <url>
     <loc>${xmlEscape(url)}</loc>
-    <changefreq>${changefreq}</changefreq>
+${lastmod ? `    <lastmod>${xmlEscape(lastmod)}</lastmod>\n` : ''}    <changefreq>${changefreq}</changefreq>
     <priority>${priority}</priority>
+${images
+  .filter((image) => /^https?:\/\//i.test(image))
+  .slice(0, 5)
+  .map((image) => `    <image:image><image:loc>${xmlEscape(image)}</image:loc></image:image>`)
+  .join('\n')}
   </url>`;
 }
 
 async function build() {
   console.log(`[sitemap] site: ${SITE_URL}`);
-  console.log(`[sitemap] api:  ${API_URL}`);
 
-  const [productsRes, categoriesRes, brandsRes] = await Promise.all([
-    safeFetch('/products?limit=10000'),
-    safeFetch('/categories'),
-    safeFetch('/brands'),
-  ]);
+  const productsPayload = await fetchApi('/products?limit=10000', SITE_URL);
+  const products = asList(productsPayload);
 
   const entries = [...STATIC_ROUTES.map((r) => toUrlEntry(r.loc, r))];
 
-  if (Array.isArray(categoriesRes)) {
-    for (const c of categoriesRes) {
-      const slug = c.slug || c.name?.fr;
-      if (!slug) continue;
-      entries.push(toUrlEntry(`/shop?category=${encodeURIComponent(slug)}`, { changefreq: 'daily', priority: '0.8' }));
-    }
-    console.log(`[sitemap] categories: ${categoriesRes.length}`);
+  if (!products.length) {
+    throw new Error('The product API returned no public products; refusing to publish an empty product sitemap.');
   }
-
-  if (Array.isArray(brandsRes)) {
-    for (const b of brandsRes) {
-      const name = b.name;
-      if (!name) continue;
-      entries.push(toUrlEntry(`/shop?brand=${encodeURIComponent(name)}`, { changefreq: 'weekly', priority: '0.7' }));
-    }
-    console.log(`[sitemap] brands: ${brandsRes.length}`);
+  let added = 0;
+  for (const product of products) {
+    if (!product.slug) continue;
+    entries.push(toUrlEntry(`/product/${encodeURIComponent(product.slug)}`, {
+      changefreq: 'weekly',
+      priority: '0.8',
+      lastmod: product.updatedAt?.slice(0, 10),
+      images: product.images ?? [],
+    }));
+    added += 1;
   }
-
-  if (Array.isArray(productsRes)) {
-    let added = 0;
-    for (const p of productsRes) {
-      if (!p.slug) continue;
-      entries.push(toUrlEntry(`/product/${encodeURIComponent(p.slug)}`, { changefreq: 'weekly', priority: '0.7' }));
-      added += 1;
-    }
-    console.log(`[sitemap] products: ${added}`);
-  }
+  console.log(`[sitemap] products: ${added}`);
 
   const noindexHint = NOINDEX_PREFIXES.map((p) => `  <!-- private: ${p}* (noindex) -->`).join('\n');
 
   const xml = `<?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
 ${noindexHint}
 ${entries.join('\n')}
 </urlset>
@@ -118,12 +94,6 @@ ${entries.join('\n')}
   const outPath = resolve(ROOT, 'public', 'sitemap.xml');
   writeFileSync(outPath, xml, 'utf8');
   console.log(`[sitemap] wrote ${entries.length} URLs to ${outPath}`);
-
-  // If the API was unreachable, fall back to a tiny but valid sitemap so
-  // crawlers still see something useful.
-  if (entries.length === STATIC_ROUTES.length) {
-    console.warn('[sitemap] No dynamic entries added — using static routes only.');
-  }
 
   // Mirror into dist/ if it already exists (helps when this script is run
   // post-build for one-off regeneration).
@@ -138,7 +108,10 @@ ${entries.join('\n')}
   const robotsPath = resolve(ROOT, 'public', 'robots.txt');
   if (existsSync(robotsPath)) {
     const original = readFileSync(robotsPath, 'utf8');
-    const updated = original.replace(/%VITE_SITE_URL%\//g, `${SITE_URL}/`);
+    const updated = original.replace(
+      /Sitemap:\s+\S+/i,
+      `Sitemap: ${SITE_URL}/sitemap.xml`
+    );
     writeFileSync(robotsPath, updated, 'utf8');
     console.log(`[sitemap] rewrote robots.txt with sitemap URL ${SITE_URL}/sitemap.xml`);
   }
@@ -164,5 +137,5 @@ ${entries.join('\n')}
 
 build().catch((err) => {
   console.error('[sitemap] failed:', err.message);
-  process.exitCode = 0; // don't fail the build
+  process.exitCode = 1;
 });

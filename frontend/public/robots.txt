@@ -11,4 +11,4 @@ Disallow: /register
 Disallow: /wishlist
 Disallow: /orders/
 
-Sitemap: https://coolzone.ma/sitemap.xml
+Sitemap: https://www.coolzone.ma/sitemap.xml

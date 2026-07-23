@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
-        xmlns:xhtml="http://www.w3.org/1999/xhtml">
+        xmlns:xhtml="http://www.w3.org/1999/xhtml"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1">
   <!-- private: /account* (noindex) -->
   <!-- private: /admin* (noindex) -->
   <!-- private: /checkout* (noindex) -->
@@ -9,28 +10,159 @@
   <!-- private: /register* (noindex) -->
   <!-- private: /wishlist* (noindex) -->
   <url>
-    <loc>https://coolzone.ma/</loc>
+    <loc>https://www.coolzone.ma/</loc>
     <changefreq>daily</changefreq>
     <priority>1.0</priority>
+
   </url>
   <url>
-    <loc>https://coolzone.ma/shop</loc>
+    <loc>https://www.coolzone.ma/shop</loc>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
+
   </url>
   <url>
-    <loc>https://coolzone.ma/brands</loc>
+    <loc>https://www.coolzone.ma/brands</loc>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+
   </url>
   <url>
-    <loc>https://coolzone.ma/about</loc>
+    <loc>https://www.coolzone.ma/about</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+
   </url>
   <url>
-    <loc>https://coolzone.ma/contact</loc>
+    <loc>https://www.coolzone.ma/contact</loc>
     <changefreq>monthly</changefreq>
     <priority>0.5</priority>
+
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/tube-spiral-galvanise</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1784796893/coolzone/viukh6id4hrbzwah639c.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/ventilateur-de-gaine</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1784719630/coolzone/rt6g4y07asczt8bf66ip.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/flexible-souple-10m</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1783089073/coolzone/xslf38wh9so7zy5lcbfz.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/flexible-isole-10m</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1784719303/coolzone/rioavzdnjibmi7jlsypc.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/caisson-de-ventilation</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1783015790/coolzone/j9nczkfvhzzye8l7g2il.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/cuivre-frigorifique-isole</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1784797291/coolzone/jaw7hvyp5eqvojcwnhk2.webp</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/clapet-zoning</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1784721875/coolzone/sj4belt3srqskriu3iid.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/carrier-climatisseur-cassette</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1782930087/coolzone/gefuuszmuunonvokeg5z.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/ingelec-climatisseur-cassette</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1782930036/coolzone/krfhxg4lzwr3csqztron.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/inglec-climatisseur-gainable</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1782929681/coolzone/nhwsijnw2f7wqhbekksy.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/climatisseur-ingelec-mural</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1782929398/coolzone/d3ogjqnosqofwspmnk1u.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/carrier-climatisseur-armoire</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1782922297/coolzone/amjnvl8tgp3hldgpiopi.webp</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/carrier-climatisseur-gainable</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1782918121/coolzone/n4s3lj3kvhjowiqachbe.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/climatisseur-carrier-mural-r32</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1782917959/coolzone/dqyur4yfjrhlkakylfxw.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/midea-climatisseur-armoire</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1782916423/coolzone/urhvbxpgvzubzqwjvzh6.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/midea-climatisseur-gainable-r32</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1782916646/coolzone/rb4zyrysotbqetw5in4e.webp</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/midea-climatisseur-cassette</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1782917730/coolzone/owfp3sxwsn41i9ik91h3.jpg</image:loc></image:image>
+  </url>
+  <url>
+    <loc>https://www.coolzone.ma/product/climatisseur-midea-mural-r32</loc>
+    <lastmod>2026-07-23</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+    <image:image><image:loc>https://res.cloudinary.com/dablfbdeo/image/upload/v1782399074/coolzone/nxfsbrhxd7iyileqb0pc.webp</image:loc></image:image>
   </url>
 </urlset>

@@ -2,7 +2,7 @@ import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import path from 'node:path';
 
-const DEFAULT_SITE_URL = 'https://coolzone.ma';
+const DEFAULT_SITE_URL = 'https://www.coolzone.ma';
 
 /** Resolve %VITE_*% placeholders in index.html with sensible fallbacks so
  *  the build never fails when an env var is missing (e.g. on Vercel preview

@@ -6,7 +6,17 @@ const DEFAULT_DESCRIPTION =
   'CoolZone : climatiseurs premium au Maroc. Split, multi-split, gainable et cassette des plus grandes marques. Prix en MAD, livraison rapide partout au Maroc.';
 const DEFAULT_OG_IMAGE = '/og-cover.png';
 
-const SITE_URL = (import.meta.env.VITE_SITE_URL || 'https://coolzone.ma').replace(/\/+$/, '');
+function canonicalSiteUrl(value) {
+  try {
+    const url = new URL(value || 'https://www.coolzone.ma');
+    if (url.hostname === 'coolzone.ma') url.hostname = 'www.coolzone.ma';
+    return url.origin.replace(/\/+$/, '');
+  } catch {
+    return 'https://www.coolzone.ma';
+  }
+}
+
+const SITE_URL = canonicalSiteUrl(import.meta.env.VITE_SITE_URL);
 
 /** Build an absolute URL from a path or pass-through for already-absolute URLs. */
 export function absoluteUrl(maybePath) {
