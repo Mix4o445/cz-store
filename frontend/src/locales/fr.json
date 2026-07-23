@@ -105,7 +105,19 @@
     "on_request": "Sur devis",
     "price_on_request": "Prix sur demande",
     "contact_us": "Contactez-nous",
-    "whatsapp_message": "Bonjour, je suis intéressé(e) par le produit « {{name}} » ({{url}}). Merci de me recontacter avec le meilleur prix et la disponibilité. — CoolZone"
+    "whatsapp_message": "Bonjour, je suis intéressé(e) par le produit « {{name}} » ({{url}}). Merci de me recontacter avec le meilleur prix et la disponibilité. — CoolZone",
+    "negotiation_option": "Option Négociation",
+    "negotiation_option_hint": "Proposez votre prix, nous vous répondons sur WhatsApp.",
+    "negotiate": "Négocier",
+    "negotiation_eyebrow": "Négociation",
+    "negotiation_title": "Proposez votre prix.",
+    "negotiation_close": "Fermer la négociation",
+    "negotiation_current_price": "Prix actuel",
+    "negotiation_offer_label": "Votre proposition",
+    "negotiation_offer_placeholder": "Ex. 7 500",
+    "negotiation_hint": "Votre proposition sera envoyée à notre équipe commerciale. Elle reste sans engagement jusqu’à notre confirmation.",
+    "negotiation_send": "Envoyer ma proposition",
+    "negotiation_message": "Bonjour, je souhaite négocier le produit « {{name}} » — {{variant}}. Prix affiché : {{currentPrice}}. Ma proposition : {{offerPrice}}. Produit : {{url}} — CoolZone"
   },
   "maintenance": {
     "eyebrow": "CoolZone",

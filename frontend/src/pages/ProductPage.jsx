@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useParams, Link, useNavigate, useLocation } from 'react-router-dom';
 import { useTranslation } from 'react-i18next';
-import { Heart, Loader2, ShieldCheck, Truck, Wifi, Zap } from 'lucide-react';
+import { Handshake, Heart, Loader2, ShieldCheck, Truck, Wifi, Zap } from 'lucide-react';
 import clsx from 'clsx';
 import { useProductBySlug } from '@/hooks/useProducts';
 import { getApiErrorMessage } from '@/hooks/useAuth';
@@ -13,6 +13,7 @@ import { useAuthStore } from '@/store/authStore';
 import RatingStars from '@/components/common/RatingStars';
 import Badge from '@/components/common/Badge';
 import ProductReviews from '@/components/product/ProductReviews';
+import NegotiationDialog from '@/components/product/NegotiationDialog';
 import SEO, { absoluteUrl } from '@/components/common/SEO';
 import WhatsAppContactButton from '@/components/common/WhatsAppContactButton';
 
@@ -53,6 +54,7 @@ export default function ProductPage() {
   const [variantIdx, setVariantIdx] = useState(0);
   const [activeImage, setActiveImage] = useState(0);
   const [activeModel, setActiveModel] = useState('');
+  const [isNegotiationOpen, setIsNegotiationOpen] = useState(false);
 
   // Distinct variant models (e.g. "On/Off", "Inverter"), in first-seen order.
   const models = useMemo(() => {
@@ -402,6 +404,29 @@ export default function ProductPage() {
             </button>
         </div>
 
+          {!product.contactOnly && displayStock > 0 && (
+            <div className="rounded-2xl border border-primary/20 bg-primary/[0.04] p-4">
+              <div className="flex items-center gap-3">
+                <span className="grid h-10 w-10 shrink-0 place-items-center rounded-full bg-primary/10 text-primary">
+                  <Handshake size={18} strokeWidth={1.6} aria-hidden="true" />
+                </span>
+                <div className="min-w-0 flex-1">
+                  <p className="text-sm font-medium">{t('product.negotiation_option')}</p>
+                  <p className="mt-0.5 text-xs text-ink-muted">
+                    {t('product.negotiation_option_hint')}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsNegotiationOpen(true)}
+                  className="btn-outline shrink-0 !px-4 !py-2 text-xs"
+                >
+                  {t('product.negotiate')}
+                </button>
+              </div>
+            </div>
+          )}
+
           <ul className="pt-4 space-y-2 text-xs uppercase tracking-wider-1 text-ink-muted border-t border-line pt-6">
             <li className="flex items-center gap-2"><Truck size={13} strokeWidth={1.4} /> {t('product.delivery_hint')}</li>
             <li className="flex items-center gap-2"><ShieldCheck size={13} strokeWidth={1.4} /> {t('product.warranty_hint')}</li>
@@ -410,6 +435,16 @@ export default function ProductPage() {
       </section>
 
       <ProductReviews productId={product._id} />
+
+      {isNegotiationOpen && (
+        <NegotiationDialog
+          productName={name}
+          productSlug={product.slug}
+          currentPrice={displayPrice}
+          variantLabel={[currentVariant?.capacity, currentVariant?.model].filter(Boolean).join(' · ')}
+          onClose={() => setIsNegotiationOpen(false)}
+        />
+      )}
     </>
   );
 }
